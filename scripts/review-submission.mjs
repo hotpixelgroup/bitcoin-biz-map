@@ -16,7 +16,8 @@ export async function runReview({ event, mode, token, fetcher = fetch, sleep = p
   async function api(path, method = 'GET', body) {
     const response = await fetcher(root + path, { method, redirect: 'error', headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2026-03-10', ...(body ? { 'Content-Type': 'application/json' } : {}) }, ...(body ? { body: JSON.stringify(body) } : {}), signal: AbortSignal.timeout(20000) });
     if (!response.ok) { const error = Error(`GitHub request failed (${response.status}): ${method} ${path.split('?')[0]}`); error.status = response.status; throw error; }
-    return response.status === 204 ? null : response.json();
+    const text = await response.text();
+    return text ? JSON.parse(text) : null;
   }
   async function file(ref) {
     const result = await api(`/contents/dist/merchants.json?ref=${encodeURIComponent(ref)}`);
@@ -74,6 +75,25 @@ export async function runReview({ event, mode, token, fetcher = fetch, sleep = p
     }
     throw Error('Timed out waiting for site validation or deployment. Reapply approved to resume.');
   }
+  async function validatePullRequest(pullNumber, head) {
+    // GitHub holds workflows from GITHUB_TOKEN-created PRs for approval. The
+    // dispatched branch check alone does not satisfy that PR's required suite.
+    // Only approve site.yml for this exact, already-validated data-only PR.
+    const runs = (await api(`/actions/workflows/site.yml/runs?event=pull_request&head_sha=${head}&per_page=100`)).workflow_runs;
+    for (const run of runs) {
+      if (run.head_sha !== head || !run.pull_requests?.some(pull => pull.number === pullNumber && pull.head?.repo?.name === 'bitcoin-biz-map' && pull.head?.repo?.url === `https://api.github.com/repos/${REPO}`)) continue;
+      if (run.conclusion === 'action_required') await api(`/actions/runs/${run.id}/approve`, 'POST');
+      for (let count = 0; count < 90; count++) {
+        const current = await api(`/actions/runs/${run.id}`);
+        if (current.status === 'completed' && current.conclusion !== 'action_required') {
+          if (current.conclusion !== 'success') throw Error(`Required PR validation failed. Inspect Actions run ${run.id}.`);
+          break;
+        }
+        if (count === 89) throw Error('Timed out waiting for required PR validation. Reapply approved to retry.');
+        await sleep(5000);
+      }
+    }
+  }
   try {
     await assertApproval();
     const proposal = parseProposal(approvedBody);
@@ -117,6 +137,8 @@ export async function runReview({ event, mode, token, fetcher = fetch, sleep = p
       const changed = await api(`/pulls/${pull.number}/files?per_page=100`);
       if (changed.length !== 1 || changed[0].filename !== 'dist/merchants.json') throw Error('The pull request contains changes outside the merchant directory.');
       await validateAndDeploy(branch, head);
+      await assertApproval();
+      await validatePullRequest(pull.number, head);
       await assertApproval();
       const remoteHead = (await api(`/git/ref/heads/${branch}`)).object.sha;
       if (remoteHead !== head) throw Error('The pull request changed after validation. Review it before retrying.');

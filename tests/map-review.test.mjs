@@ -88,15 +88,18 @@ async function workflowFixture() {
       state.files['data-sha'] = JSON.parse(Buffer.from(body.content, 'base64').toString()); state.refs[body.branch] = 'data-sha'; return result({ commit: { sha: 'data-sha' } });
     }
     if (path === '/pulls' && method === 'GET') return result([]);
-    if (path === '/pulls') return result({ number: 124, html_url: 'https://github.com/hotpixelgroup/bitcoin-biz-map/pull/124' });
+    if (path === '/pulls') { state.runs.push({ id: 100, event: 'pull_request', head_sha: 'data-sha', status: 'completed', conclusion: 'action_required', pull_requests: [{ number: 124, head: { repo: { name: 'bitcoin-biz-map', url: 'https://api.github.com/repos/hotpixelgroup/bitcoin-biz-map' } } }] }); return result({ number: 124, html_url: 'https://github.com/hotpixelgroup/bitcoin-biz-map/pull/124' }); }
     if (path === '/pulls/124/files') return result([{ filename: 'dist/merchants.json' }]);
-    if (path === '/actions/workflows/site.yml/runs') return result({ workflow_runs: state.runs.filter(run => run.ref === u.searchParams.get('branch')) });
+    if (path === '/actions/workflows/site.yml/runs') return result({ workflow_runs: state.runs.filter(run => u.searchParams.get('event') === 'pull_request' ? run.event === 'pull_request' : run.ref === u.searchParams.get('branch')) });
+    if (path === '/actions/runs/100/approve') { assert.ok(state.runs.some(run => run.ref && run.ref !== 'main' && run.conclusion === 'success')); state.runs.find(run => run.id === 100).conclusion = 'success'; return new Response(null, { status: 201 }); }
+    if (path === '/actions/runs/100') return result(state.runs.find(run => run.id === 100));
     if (path === '/actions/workflows/site.yml/dispatches') {
       if (body.ref === 'main') assert.ok(state.merged, 'Pages must deploy after merging');
       state.runs.push({ id: state.runs.length + 1, ref: body.ref, head_sha: state.refs[body.ref], status: 'completed', conclusion: body.ref === 'main' && state.failDeployment ? 'failure' : 'success', html_url: 'https://github.com/hotpixelgroup/bitcoin-biz-map/actions/runs/1' }); return new Response(null, { status: 204 });
     }
     if (path === '/pulls/124/merge') {
       assert.ok(state.runs.some(run => run.head_sha === body.sha && run.ref !== 'main' && run.conclusion === 'success'), 'Required checks must precede merge');
+      assert.equal(state.runs.find(run => run.id === 100).conclusion, 'success', 'PR workflow approval and validation must precede merge');
       assert.equal(body.sha, 'data-sha'); state.merged = true; state.refs.main = 'merged-sha'; state.files['merged-sha'] = state.files['data-sha']; return result({ merged: true, sha: 'merged-sha' });
     }
     throw Error(`Unexpected ${method} ${path}`);
@@ -105,7 +108,7 @@ async function workflowFixture() {
 }
 test('approved workflow creates a data-only PR, validates, merges, deploys, and closes the issue', async () => {
   const f = await workflowFixture(); await runReview(f.options);
-  assert.equal(f.issue.state, 'closed'); assert.ok(f.state.merged); assert.match(f.state.comments[0].body, /Published to the/);
+  assert.equal(f.issue.state, 'closed'); assert.ok(f.state.merged); assert.ok(f.state.writes.some(write => write.path === '/actions/runs/100/approve')); assert.match(f.state.comments[0].body, /Published to the/);
   assert.equal(f.state.writes.filter(write => write.path === '/contents/dist/merchants.json').length, 1);
   assert.ok(f.state.writes.some(write => write.path === '/issues/123/labels' && write.body.labels.includes('published')));
 });

@@ -1,0 +1,1 @@
+{"name":"sats-in-the-sun","private":true,"version":"1.0.0","description":"An interactive map of 219 Arizona bitcoin merchants","scripts":{"dev":"python3 -m http.server 5173 --directory dist","check":"node --check dist/app.js && python3 scripts/validate-data.py"}}

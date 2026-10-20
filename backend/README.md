@@ -51,3 +51,7 @@ Check **Review anonymous submissions** when the queue is delayed. The concurrenc
 ## Publishing reviewed submissions
 
 Review the issue’s generated **Map update** section, edit the desired listing values, then add **approved**. The separate GitHub approval workflow creates and validates a data-only PR, merges it through branch protection, and dispatches Pages deployment. Only a human maintainer can approve. The Worker never gains repository write access. See [the approval guide](../CONTRIBUTING.md#approve-a-community-submission).
+
+## Visitor payment reports
+
+The existing free intake accepts payment feedback as a listing correction with `visitOutcome`, `visitDate`, `visitRail`, and optional `paymentConditions`. Inputs use the same consent, origin, signed challenge, durable queue, and quotas as other submissions. Dates and networks are validated in the Worker and again before publishing. No new storage, service, or paid plan is required. Create the GitHub `payment-report` label before deploying the processor. The `approved` label and protected data-only PR flow remain the only publication path.

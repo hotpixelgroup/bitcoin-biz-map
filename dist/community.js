@@ -51,7 +51,7 @@
     challenge = data.challenge; challengeAt = Date.now();
     return true;
   }
-  async function open(kind, merchant) {
+  async function open(kind, merchant, outcome = '') {
     const current = ++session;
     challenge = null; sending = false;
     form.reset(); form.hidden = false;
@@ -63,11 +63,25 @@
     field('address').value = merchant?.address || merchant?.city || '';
     field('website').value = /^https?:\/\//.test(merchant?.website || '') ? merchant.website : '';
     const correction = kind === 'correction';
+    const visit = correction && merchant && ['paid','failed'].includes(outcome);
+    field('visitOutcome').value = visit ? outcome : '';
+    query('#submission-visit').hidden = !visit;
+    query('#submission-visit').disabled = !visit;
+    const localDay = new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10);
+    field('visitDate').value = visit ? localDay : '';
+    field('visitDate').max = localDay;
+    field('visitDate').min = '2009-01-03';
+    field('visitDate').required = Boolean(visit);
     query('#submission-title').textContent = correction ? 'Help keep the map right.' : 'Suggest a business.';
     query('#submission-intro').textContent = correction ? 'A wrong address or a place that no longer takes bitcoin? Let us know.' : 'Know a US spot that takes bitcoin? Help another Bitcoiner find it.';
     query('#submission-evidence-label').textContent = correction ? 'What is incorrect, and what should it say?' : 'How do you know they accept bitcoin?';
+    if (visit) {
+      query('#submission-title').textContent = outcome === 'paid' ? 'You spent sats here.' : 'Help the next visitor.';
+      query('#submission-intro').textContent = 'Your payment experience goes to a public GitHub issue for maintainer review before any listing changes. No account needed.';
+      query('#submission-evidence-label').textContent = 'What happened? Include useful details or a public source.';
+    }
     query('#submission-payment-label').hidden = correction;
-    query('#submission-problem-label').hidden = !correction;
+    query('#submission-problem-label').hidden = !correction || visit;
     send.disabled = true;
     message('Getting the form ready…');
     dialog.showModal();
@@ -79,7 +93,7 @@
     if (!link) return;
     event.preventDefault();
     const merchant = merchants.find(item => item.id === link.dataset.listingId);
-    open(link.dataset.community, merchant);
+    open(link.dataset.community, merchant, link.dataset.outcome);
   });
   query('#submission-close').onclick = () => dialog.close();
   query('#submission-done').onclick = () => dialog.close();

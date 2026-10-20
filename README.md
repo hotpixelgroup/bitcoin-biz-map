@@ -22,9 +22,11 @@ Open http://localhost:5173 (choose another port if occupied). No build, installa
 - A full state-by-state directory with evidence notes, individual state CSV downloads, and a full-directory CSV export. Counts and exports always read the current catalog.
 - Browser-local saved places and direct links to individual merchants.
 - Optional geolocation, public OSRM driving route previews in Bitcoin orange, and Google Maps navigation links.
-- A three-stop Scottsdale trail inspired by the article, plus random merchant discovery.
+- Personal Bitcoin trails with up to four reorderable stops, orange road previews, Google Maps navigation, and share links that contain business IDs only. A Scottsdale preset and random merchant discovery are also available.
 - Anonymous new-business suggestions and listing corrections, with the selected business prefilled and submissions delivered to public GitHub review issues.
-- Responsive list/map switch, keyboard controls, and explicit network/location error states.
+- Search the visible map area, synchronized card/pin highlighting, and a draggable mobile places sheet with keyboard controls.
+- Lightning/on-chain filters, payment conditions, and anonymous visitor payment reports approved through GitHub before their dated results appear on the map.
+- Device location with transient-failure retries and city/ZIP or map-point fallback, plus distance filters and nearest-first results.
 
 ## Suggest a business or report a listing
 
@@ -35,6 +37,14 @@ The map remains on GitHub Pages. The deployed Cloudflare **Workers Free** API an
 Only free services are permitted: do not enable a paid Workers plan, paid add-ons, or larger paid Actions runners. Exhausting the free backend allowance pauses submissions rather than authorizing charges. See [backend setup and controls](backend/README.md).
 
 The original GitHub issue templates remain available for contributors who prefer them. To approve a submission, review or edit its prepared **Map update** JSON and add **approved**. The bot creates a data-only PR, validates it, merges it through the protected branch, deploys Pages, and closes the issue after publication. See the [maintainer approval guide](CONTRIBUTING.md#approve-a-community-submission). Corrections require explicit field changes; closures and withdrawn bitcoin acceptance use a reviewed removal.
+
+## Location and trail privacy
+
+**Use my location** requests a device fix. An already-granted permission can provide nearby results automatically; new visitors explicitly choose the action before a browser prompt. A quick coarse/cached fix is tried first, with one fresh high-accuracy retry for temporary failures. Permission denial is respected. Browser/OS settings and embedded-browser support can still prevent GPS access; the map always offers a starting-point picker instead of a dead-end error.
+
+City/state/ZIP suggestions are approximate centers of matching directory listings, computed locally without an external geocoder. They are limited to areas represented in the catalog. A map crosshair provides an exact chosen point anywhere. Changing location updates nearest-first results and navigation links. Origins and GPS accuracy stay in memory for the visit, never in browser storage or copied trail links. Previewing a route sends its coordinates to OSRM; opening navigation passes its selected origin/stops to Google Maps. Trail stops and favorites use local browser storage, with no account required. Trails preserve the chosen order rather than optimizing it, and the four-stop limit keeps navigation compatible with mobile Google Maps URLs.
+
+Visitors can report **I paid here** or **Payment didn’t work** from a listing. Reports require a visit date, payment network (including “Not sure”), details, and public-sharing consent. GitHub review and the **approved** label are required before the map shows a reviewed visitor payment date, caution, or conditions. This does not imply a purchase by the maintainer. See the [payment review guide](CONTRIBUTING.md#review-visitor-payment-reports).
 
 ## Data and services
 

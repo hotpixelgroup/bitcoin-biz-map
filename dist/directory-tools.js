@@ -8,8 +8,8 @@
   function csv(rows) {
     // Spreadsheet programs can execute cells beginning with formula characters.
     const cell = value => '"' + (typeof value === 'number' ? String(value) : String(value ?? '').replace(/^[\s]*[=+@-]/, "'$&")).replace(/"/g, '""') + '"';
-    const fields = ['name','address','city','state','category','latitude','longitude','lightning_reported','onchain_reported','evidence_type','source_date','source_checked_at','source_url','map_url'];
-    return '\ufeff' + [fields, ...rows.map(m => [m.name,m.address,m.city,m.state,m.category,m.lat,m.lon,m.lightning,m.onchain,evidence(m),date(m),m.verification?.checkedAt || '',source(m),`https://hotpixelgroup.github.io/bitcoin-biz-map/#${m.id}`])].map(row => row.map(cell).join(',')).join('\r\n');
+    const fields = ['name','address','city','state','category','latitude','longitude','lightning_reported','onchain_reported','evidence_type','source_date','source_checked_at','source_url','map_url','last_reviewed_payment_date','last_reviewed_payment_rail','latest_payment_outcome','latest_payment_date','payment_conditions'];
+    return '\ufeff' + [fields, ...rows.map(m => [m.name,m.address,m.city,m.state,m.category,m.lat,m.lon,m.lightning,m.onchain,evidence(m),date(m),m.verification?.checkedAt || '',source(m),`https://hotpixelgroup.github.io/bitcoin-biz-map/#${m.id}`,m.lastPayment?.date || '',m.lastPayment?.rail || '',m.latestPaymentReport?.outcome || '',m.latestPaymentReport?.date || '',m.paymentNotes || ''])].map(row => row.map(cell).join(',')).join('\r\n');
   }
   function download(rows, filename) {
     const href = URL.createObjectURL(new Blob([csv(rows)], {type:'text/csv;charset=utf-8'}));

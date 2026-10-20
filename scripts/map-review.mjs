@@ -1,9 +1,10 @@
+import { validatePaymentReport } from '../backend/lib/intake.js';
 import '../dist/geography.js';
 import { createHash } from 'node:crypto';
 export const START = '<!-- map-update:start -->';
 export const END = '<!-- map-update:end -->';
 export const fingerprint = value => createHash('sha256').update(JSON.stringify(value)).digest('hex');
-const fields = ['name', 'address', 'city', 'state', 'category', 'lat', 'lon', 'website', 'phone', 'lightning', 'onchain', 'osmId', 'coordinateSource', 'verified'];
+const fields = ['name', 'address', 'city', 'state', 'category', 'lat', 'lon', 'website', 'phone', 'lightning', 'onchain', 'osmId', 'coordinateSource', 'verified', 'paymentNotes'];
 const clean = value => typeof value === 'string' ? value.trim().replace(/[\u0000-\u001f\u007f]/g, ' ') : '';
 export function section(body, heading) {
   const match = body.match(new RegExp(`^### ${heading}\\s*\\n([\\s\\S]*?)(?=^### |(?![\\s\\S]))`, 'm'));
@@ -18,6 +19,10 @@ export function submissionFromIssue(issue) {
     listingId: (value => BitcoinGeo.validId(value) ? value : '')(url.match(/\/bitcoin-biz-map\/(?:\?[^#\s]*)?#([a-z0-9-]+)(?:\s|$)/)?.[1]),
     name: section(body, 'Business') || section(body, 'Business name') || section(body, 'Merchant name and address'),
     state: section(body, 'State'),
+    visitOutcome: section(body, 'Payment outcome'),
+    visitDate: section(body, 'Visit date'),
+    visitRail: section(body, 'Payment rail'),
+    paymentConditions: section(body, 'Payment conditions'),
     address: section(body, 'Address') || section(body, 'Street address and city'),
     website: section(body, 'Website') || section(body, 'Business website or public listing'),
     payment: section(body, 'Payment method / correction type') || section(body, 'Bitcoin payment methods'),
@@ -42,12 +47,14 @@ export async function makeProposal(submission, catalog, { fetcher = fetch } = {}
       }
     } catch { /* Missing or ambiguous coordinates must be supplied by the reviewer. */ }
   }
-  return { action: submission.kind === 'correction' ? 'update' : 'add', listingId: current?.id || submission.listingId || '', expected: current ? fingerprint(current) : '', evidence: clean(submission.evidence).slice(0, 2000), merchant };
+  const paymentReport = submission.visitOutcome ? validatePaymentReport({outcome:submission.visitOutcome,date:submission.visitDate,rail:submission.visitRail}) : null;
+  if (paymentReport && submission.paymentConditions && submission.paymentConditions !== 'Not supplied') merchant.paymentNotes = clean(submission.paymentConditions).slice(0,500);
+  return { ...(paymentReport ? {paymentReport} : {}), action: submission.kind === 'correction' ? 'update' : 'add', listingId: current?.id || submission.listingId || '', expected: current ? fingerprint(current) : '', evidence: clean(submission.evidence).slice(0, 2000), merchant };
 }
 export function reviewSection(proposal, catalog) {
   const categories = [...new Set(catalog.merchants.map(row => row.category))].sort();
   const json = JSON.stringify(proposal, null, 2).replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/@/g, '\\u0040');
-  return `\n\n${START}\n### Maintainer: publish this map update\n\n1. Verify the evidence. Use the issue's **Edit** menu to review the JSON below and fill any blank city, category, coordinates, or coordinate source. Census coordinates are estimates; check the pin.\n2. For corrections, **edit the current listing below to the desired final values**. To remove a closed business, duplicate, or a place that no longer accepts bitcoin, set \`action\` to \`remove\`. If no listing was identified, set the original report’s map-listing URL, then remove this whole generated section and reapply \`needs-review\` to prepare it again.\n3. Add the **approved** label. Automation creates a data-only PR, runs the required checks, merges it, and republishes Pages. No second merge click is needed. Remove the label to cancel before merging. If validation fails, fix the JSON and remove/reapply \`approved\`.\n\nFor a correction, retain \`expected\`: it prevents overwriting a newer listing. Nothing publishes when the proposed correction makes no change.\n\n<details><summary>Existing categories</summary>\n\n${categories.join(' · ')}\n\n</details>\n\n\`\`\`json\n${json}\n\`\`\`\n${END}`;
+  return `\n\n${START}\n### Maintainer: publish this map update\n\n1. Verify the evidence. Use the issue's **Edit** menu to review the JSON below and fill any blank city, category, coordinates, or coordinate source. Census coordinates are estimates; check the pin.\n2. For corrections, **edit the current listing below to the desired final values**. To remove a closed business, duplicate, or a place that no longer accepts bitcoin, set \`action\` to \`remove\`. If no listing was identified, set the original report’s map-listing URL, then remove this whole generated section and reapply \`needs-review\` to prepare it again.\n3. Add the **approved** label. Automation creates a data-only PR, runs the required checks, merges it, and republishes Pages. No second merge click is needed. Remove the label to cancel before merging. If validation fails, fix the JSON and remove/reapply \`approved\`.\n\nPayment reports require a review of the visitor’s claim and date. Approving records reviewed visitor feedback; a failed payment does not automatically disable a payment rail or remove the business. You can edit the listing or remove it when the evidence supports that.\n\nFor a correction, retain \`expected\`: it prevents overwriting a newer listing. Nothing publishes when the proposed correction makes no change.\n\n<details><summary>Existing categories</summary>\n\n${categories.join(' · ')}\n\n</details>\n\n\`\`\`json\n${json}\n\`\`\`\n${END}`;
 }
 export function parseProposal(body) {
   if (body.split(START).length !== 2 || body.split(END).length !== 2) throw Error('Expected exactly one prepared Map update section.');
@@ -61,11 +68,13 @@ function assertKeys(value, allowed) {
   if (!value || typeof value !== 'object' || Array.isArray(value) || Object.keys(value).some(key => !allowed.includes(key))) throw Error('Map update contains unsupported fields.');
 }
 export function applyProposal(catalog, proposal, issueNumber, now = new Date().toISOString()) {
-  assertKeys(proposal, ['action', 'listingId', 'expected', 'evidence', 'merchant']);
+  assertKeys(proposal, ['action', 'listingId', 'expected', 'evidence', 'merchant', 'paymentReport']);
   if (!Number.isSafeInteger(issueNumber) || issueNumber < 1 || !['add', 'update', 'remove'].includes(proposal.action)) throw Error('Invalid update action or issue number.');
   const hash = fingerprint(proposal);
   if ((catalog.appliedReviews || []).some(item => item.issue === issueNumber && item.hash === hash)) return { catalog, hash, alreadyApplied: true };
   if (typeof proposal.evidence !== 'string' || !proposal.evidence.trim() || proposal.evidence.length > 2000) throw Error('Public evidence is required before approval.');
+  const report = proposal.paymentReport ? validatePaymentReport(proposal.paymentReport,{today:now.slice(0,10)}) : null;
+  if (report && proposal.action !== 'update') throw Error('Payment reports must update an existing listing.');
   const copy = structuredClone(catalog);
   const current = copy.merchants.find(row => row.id === proposal.listingId);
   if (proposal.action !== 'add' && (!current || fingerprint(current) !== proposal.expected)) throw Error('The listing is missing or changed since preparation. Regenerate the Map update section and review it again.');
@@ -75,8 +84,8 @@ export function applyProposal(catalog, proposal, issueNumber, now = new Date().t
   else {
     assertKeys(proposal.merchant, fields);
     const m = { ...proposal.merchant };
-    for (const [key, max] of Object.entries({ name: 120, address: 300, city: 100, state: 2, category: 100, website: 500, phone: 80, coordinateSource: 500, osmId: 80, verified: 10 })) {
-      if (m[key] === undefined && ['phone', 'website', 'coordinateSource', 'osmId', 'verified'].includes(key)) m[key] = '';
+    for (const [key, max] of Object.entries({ name: 120, address: 300, city: 100, state: 2, category: 100, website: 500, phone: 80, coordinateSource: 500, osmId: 80, verified: 10, paymentNotes: 500 })) {
+      if (m[key] === undefined && ['phone', 'website', 'coordinateSource', 'osmId', 'verified', 'paymentNotes'].includes(key)) m[key] = '';
       if (typeof m[key] !== 'string' || m[key].length > max || /[\u0000-\u001f\u007f]/.test(m[key])) throw Error(`Invalid ${key}.`);
       m[key] = m[key].trim();
     }
@@ -89,8 +98,14 @@ export function applyProposal(catalog, proposal, issueNumber, now = new Date().t
     if (m.verified && (!/^\d{4}-\d{2}-\d{2}$/.test(m.verified) || !Number.isFinite(Date.parse(m.verified)) || new Date(m.verified).toISOString().slice(0, 10) !== m.verified)) throw Error('Verified date must be YYYY-MM-DD or empty.');
     if (proposal.action === 'add' && copy.merchants.some(row => row.id === id)) throw Error('This issue already added a business. Submit a correction instead.');
     if (copy.merchants.some(row => row.id !== id && row.name.toLowerCase() === m.name.toLowerCase() && row.address.toLowerCase() === m.address.toLowerCase())) throw Error('This business and address are already on the map.');
-    if (current && fields.every(key => (current[key] ?? (key === 'state' && current.id.startsWith('az-') ? 'AZ' : '')) === m[key])) throw Error('No listing change was specified. Edit the current details before approving.');
+    const reportAdds = report && (report.date >= (current?.latestPaymentReport?.date || '') || (report.outcome === 'paid' && report.date >= (current?.lastPayment?.date || '')));
+    if (current && !reportAdds && fields.every(key => (current[key] ?? (key === 'state' && current.id.startsWith('az-') ? 'AZ' : '')) === m[key])) throw Error('No listing change was specified. Edit the current details before approving.');
     const merchant = { ...current, ...m, id, verification: { type: 'maintainer-reviewed', checkedAt: now.slice(0, 10), sourceUrl: `https://github.com/hotpixelgroup/bitcoin-biz-map/issues/${issueNumber}`, summary: proposal.evidence }, reviewIssue: `https://github.com/hotpixelgroup/bitcoin-biz-map/issues/${issueNumber}`, reviewedAt: now.slice(0, 10) };
+    if (report) {
+      const reviewed = {...report,reviewIssue:merchant.reviewIssue};
+      if (report.date >= (current.latestPaymentReport?.date || '')) merchant.latestPaymentReport = reviewed;
+      if (report.outcome === 'paid' && report.date >= (current.lastPayment?.date || '')) merchant.lastPayment = reviewed;
+    }
     if (proposal.action === 'add') copy.merchants.push(merchant);
     else copy.merchants[copy.merchants.findIndex(row => row.id === id)] = merchant;
   }

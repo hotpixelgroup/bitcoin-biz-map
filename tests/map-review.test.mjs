@@ -149,3 +149,25 @@ test('review reads Git blobs when the national catalog exceeds the Contents API 
   await runReview(f.options);
   assert.ok(f.state.blobReads > 0); assert.ok(f.state.merged);
 });
+
+test('reviewed payment success and difficulty preserve networks and latest successful history',async()=>{
+ const prepare=async(data,source=catalog)=>makeProposal({kind:'correction',listingId:echo.id,evidence:'Visitor describes the payment at this branch.',visitOutcome:'paid',visitDate:'2026-10-19',visitRail:'lightning',...data},source);
+ const p=await prepare({paymentConditions:'Ask the cashier for Lightning.'});
+ assert.equal(p.paymentReport.outcome,'paid');assert.equal(p.merchant.paymentNotes,'Ask the cashier for Lightning.');
+ const first=applyProposal(catalog,p,301,'2026-10-20T20:00:00Z').catalog;
+ const paid=first.merchants.at(-1);assert.equal(paid.lastPayment.date,'2026-10-19');assert.match(paid.lastPayment.reviewIssue,/301$/);
+ const failure=await prepare({visitOutcome:'failed',visitDate:'2026-10-20'},first);
+ const second=applyProposal(first,failure,302,'2026-10-20T20:00:00Z').catalog;
+ assert.equal(second.merchants.at(-1).lastPayment.date,'2026-10-19');assert.equal(second.merchants.at(-1).latestPaymentReport.outcome,'failed');assert.equal(second.merchants.at(-1).lightning,true);
+ const stale=await prepare({visitDate:'2026-10-18'},second);assert.throws(()=>applyProposal(second,stale,303,'2026-10-20T20:00:00Z'),/No listing change/);
+ const future=await prepare({});future.paymentReport.date='2026-10-21';assert.throws(()=>applyProposal(catalog,future,304,'2026-10-20T20:00:00Z'),/date/);
+ const parsed=submissionFromIssue({labels:[{name:'merchant-correction'}],body:'### Payment outcome\npaid\n\n### Visit date\n2026-10-19\n\n### Payment rail\nlightning'});assert.equal(parsed.visitOutcome,'paid');assert.equal(parsed.visitDate,'2026-10-19');
+});
+test('queued payment report becomes the exact reviewed branch history through issue preparation',async()=>{
+ const {issuePayload}=await import('../scripts/process-submissions.mjs');
+ const payload=issuePayload({id:'f'.repeat(64),receivedAt:'2026-10-20T12:00:00Z',submission:{kind:'correction',listingId:echo.id,name:echo.name,address:echo.address,evidence:'Test fixture describing a visit',visitOutcome:'paid',visitDate:'2026-10-19',visitRail:'unknown',paymentConditions:'Call ahead.'}});
+ const parsed=submissionFromIssue({...payload,labels:payload.labels.map(name=>({name}))});
+ const proposal=await makeProposal(parsed,catalog);assert.equal(proposal.listingId,echo.id);
+ const updated=applyProposal(catalog,parseProposal(payload.body+reviewSection(proposal,catalog)),305,'2026-10-20T20:00:00Z').catalog;
+ assert.equal(updated.merchants.at(-1).lastPayment.rail,'unknown');assert.equal(updated.merchants.at(-1).paymentNotes,'Call ahead.');assert.deepEqual(updated.merchants[0],catalog.merchants[0]);
+});

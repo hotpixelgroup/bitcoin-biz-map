@@ -11,6 +11,11 @@ export function createD1Store(db, now = Date.now) {
       const result = await db.prepare('INSERT OR IGNORE INTO intake_records (pathname, value, created_at) VALUES (?, ?, ?)').bind(path, JSON.stringify(data), now()).run();
       return result.meta.changes === 1;
     },
+    async consume(path, limit) {
+      // One atomic query per budget, including under concurrent requests.
+      const result = await db.prepare("INSERT INTO intake_records (pathname, value, created_at) VALUES (?, '1', ?) ON CONFLICT(pathname) DO UPDATE SET value = CAST(CAST(value AS INTEGER) + 1 AS TEXT) WHERE CAST(value AS INTEGER) < ?").bind(path, now(), limit).run();
+      return result.meta.changes === 1;
+    },
     async list(prefix, limit) {
       const { results } = await db.prepare('SELECT pathname FROM intake_records WHERE pathname >= ? AND pathname < ? ORDER BY pathname LIMIT ?').bind(...range(prefix), Math.min(100, limit)).all();
       return results;

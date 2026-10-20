@@ -1,16 +1,18 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "bitcoin-biz-map-intake",
+  "account_id": "f4e86634368d48a71fb87ceceec372ec",
   "main": "worker.js",
   "compatibility_date": "2026-10-20",
   "compatibility_flags": ["nodejs_compat"],
   "workers_dev": true,
+  "preview_urls": false,
   "observability": { "enabled": false },
   "d1_databases": [
     {
       "binding": "DB",
       "database_name": "bitcoin-biz-map-intake",
-      "database_id": "SET_AFTER_CREATING_A_FREE_D1_DATABASE",
+      "database_id": "97f94ca9-f242-44bf-98c3-8e4a2e84ead1",
       "migrations_dir": "migrations"
     }
   ]

@@ -18,7 +18,7 @@ Never silently upgrade a service or deploy this project to an already-paid Worke
 
 ## Setup after account access is authorized
 
-1. Install development tools: `npm ci --prefix backend`. Sign into the intended Cloudflare account with `cd backend && npx wrangler login`, completing its authorization yourself. Do not paste account credentials or tokens into chat.
+1. Install development tools: `npm ci --prefix backend`. Sign into the intended Cloudflare account with `cd backend && npx wrangler login --device --use-keyring --scopes account:read user:read workers_scripts:write d1:write`, completing its authorization yourself. The specific `workers_scripts:write` scope is required for deployment and subdomain activation. Do not paste account credentials or tokens into chat.
 2. Run `npx wrangler whoami` and verify in the Cloudflare dashboard that this account is on **Workers Free**. Stop if it is on a paid Workers plan. No custom domain, credit card, or paid subscription is needed for the `workers.dev` endpoint.
 3. Create the free database with `npx wrangler d1 create bitcoin-biz-map-intake`. Copy the returned database ID into `backend/wrangler.jsonc`; never infer an account or database ID. Apply the schema with `npx wrangler d1 migrations apply bitcoin-biz-map-intake --remote`.
 4. Generate a random 32+ character queue secret. Set it with `npx wrangler secret put SUBMISSION_QUEUE_SECRET`, and set the same value as the repository Actions secret `SUBMISSION_QUEUE_SECRET` using secure stdin. Keep it out of files, shell arguments, and output. D1's private `DB` binding needs no database token.
@@ -32,7 +32,7 @@ The repository and database are fixed by the server implementation; submissions 
 
 - JSON only, 12 KB request cap, bounded fields, explicit public-sharing consent, HTTP/HTTPS-only business website links, and an exact CORS origin of `https://hotpixelgroup.github.io`.
 - Signed ten-minute form challenge, short minimum completion time, and honeypot. These are basic abuse controls, not a CAPTCHA or a guarantee against determined bots.
-- D1 create-only primary keys serialize rate slots across requests. Cloudflare's trusted client IP header is HMAC-hashed; raw IP addresses are never stored in records or GitHub issues. Cloudflare may process request metadata under its own hosting policies. Worker observability logs are disabled in configuration.
+- D1 atomic capped counters serialize quotas across requests using one query per budget, keeping each submission below the Free plan's per-request query limit. Cloudflare's trusted client IP header is HMAC-hashed; raw IP addresses are never stored in records or GitHub issues. Cloudflare may process request metadata under its own hosting policies. Worker observability logs are disabled in configuration.
 - Duplicate content on the same UTC day reuses its receipt. Queue entries remain private until published as a GitHub issue. No account, name, email, wallet details, or receipts are requested from visitors.
 - The scheduled processor uses fixed issue destinations, labels, and assignee; neutralizes mentions/HTML; and includes a stable submission marker. It recognizes only its own bot's prior issues, including closed issues, when recovering from an acknowledgment failure. Failed issue creation is not blindly retried.
 - Acknowledgment deletes the pending record after creating a processed receipt. The midnight UTC processing window prunes rate records after forty-eight hours and receipts after thirty days. Unprocessed suggestions remain queued so outages do not silently discard them.

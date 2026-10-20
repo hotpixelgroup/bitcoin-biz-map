@@ -73,10 +73,7 @@ export function createIntake({ store, secret, now = Date.now, origin = ORIGIN, r
     return /^\d+$/.test(time || '') && /^[a-f0-9]{32}$/.test(nonce || '') && age >= 1500 && age <= 600000 && equal(signature, sign(`${time}.${nonce}.${ipKey(request)}`));
   }
   async function budget(prefix, limit) {
-    for (let slot = 0; slot < limit; slot++) {
-      if (await store.claim(`${prefix}/${slot}.json`, { createdAt: new Date(now()).toISOString() })) return true;
-    }
-    return false;
+    return store.consume(prefix, limit);
   }
   async function publicHandler(request) {
     if (request.headers.get('origin') !== origin) return json(request, { error: 'This endpoint only accepts submissions from the map.' }, 403);

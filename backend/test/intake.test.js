@@ -8,6 +8,7 @@ function fixture() {
   const store = {
     read: async key => records.get(key) || null,
     claim: async (key, value) => { if (records.has(key)) return false; records.set(key, value); return true; },
+    consume: async (key, limit) => { const count = records.get(key) || 0; if (count >= limit) return false; records.set(key, count + 1); return true; },
     list: async (prefix, limit) => [...records.keys()].filter(key => key.startsWith(prefix)).slice(0, limit).map(pathname => ({ pathname })),
     remove: async key => { records.delete(key); },
   };

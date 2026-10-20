@@ -43,3 +43,13 @@ test('D1 prefix scans and age cleanup preserve unrelated and unprocessed records
     assert.deepEqual(await f.store.read('processed/current'), {});
   } finally { f.sqlite.close(); }
 });
+test('D1 budget uses one atomic query and stops at the configured cap', async () => {
+  const f = fixture();
+  try {
+    const outcomes = await Promise.all(Array.from({ length: 60 }, () => f.store.consume('daily/today', 50)));
+    assert.equal(outcomes.filter(Boolean).length, 50);
+    assert.equal(await f.store.read('daily/today'), 50);
+    assert.equal(await f.store.consume('daily/today', 50), false);
+    assert.equal(await f.store.consume('daily/tomorrow', 50), true);
+  } finally { f.sqlite.close(); }
+});

@@ -92,7 +92,7 @@
     if (sending || !form.reportValidity()) return;
     const current = session;
     sending = true; send.disabled = true;
-    message('Sending your suggestion for review…');
+    message('Sending your submission for review…');
     try {
       if (!challenge || Date.now() - challengeAt > 480000) {
         if (!await ready(current)) return;

@@ -5,7 +5,7 @@
   "description": "An interactive map of 219 Arizona bitcoin merchants",
   "scripts": {
     "dev": "python3 -m http.server 5173 --directory dist",
-    "check": "node --check dist/app.js && node --check dist/community.js && node --check dist/community-config.js && node --check backend/lib/intake.js && node --check backend/lib/blob-store.js && node --check backend/lib/service.js && node --check backend/api/submissions.js && node --check backend/api/queue.js && node --test tests/*.test.cjs backend/test/*.test.js && python3 scripts/validate-data.py && python3 scripts/validate-site.py"
+    "check": "node --check dist/app.js && node --check dist/community.js && node --check dist/community-config.js && node --check backend/lib/intake.js && node --check backend/lib/d1-store.js && node --check backend/worker.js && node --test tests/*.test.cjs backend/test/*.test.js && python3 scripts/validate-data.py && python3 scripts/validate-site.py"
   },
   "license": "MIT",
   "repository": {

@@ -13,7 +13,7 @@ function fixture() {
   };
   const secret = 'unit-test-only-secret-'.repeat(3);
   const app = createIntake({ store, secret, now: () => time, log: () => {} });
-  const request = (method, body, origin = ORIGIN, ip = '192.0.2.1') => new Request('https://test.vercel.app/api/submissions', { method, headers: { Origin: origin, 'Content-Type': 'application/json', 'x-vercel-forwarded-for': ip }, ...(body ? { body: JSON.stringify(body) } : {}) });
+  const request = (method, body, origin = ORIGIN, ip = '192.0.2.1') => new Request('https://test.workers.dev/api/submissions', { method, headers: { Origin: origin, 'Content-Type': 'application/json', 'cf-connecting-ip': ip }, ...(body ? { body: JSON.stringify(body) } : {}) });
   async function submit(extra = {}, ip) {
     const challenge = (await (await app.publicHandler(request('GET', null, ORIGIN, ip))).json()).challenge;
     time += 2000;
@@ -98,7 +98,7 @@ test('processor does not duplicate an existing closed issue after an acknowledgm
     if (String(url).endsWith('/api/queue') && options.method === 'POST') { acks++; return Response.json({ acknowledged: true }); }
     creates++; throw new Error('Unexpected issue creation');
   };
-  await processQueue({ queueUrl: 'https://test.vercel.app/api/queue', queueSecret: 'test', githubToken: 'test', fetcher });
+  await processQueue({ queueUrl: 'https://test.workers.dev/api/queue', queueSecret: 'test', githubToken: 'test', fetcher });
   assert.equal(creates, 0); assert.equal(acks, 1);
 });
 test('daily queue cap applies across different client addresses', async () => {

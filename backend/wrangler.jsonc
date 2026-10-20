@@ -1,0 +1,17 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "bitcoin-biz-map-intake",
+  "main": "worker.js",
+  "compatibility_date": "2026-10-20",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
+  "observability": { "enabled": false },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "bitcoin-biz-map-intake",
+      "database_id": "SET_AFTER_CREATING_A_FREE_D1_DATABASE",
+      "migrations_dir": "migrations"
+    }
+  ]
+}

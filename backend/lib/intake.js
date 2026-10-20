@@ -56,7 +56,7 @@ async function readBody(request) {
 export function createIntake({ store, secret, now = Date.now, origin = ORIGIN, ready = true, log = console.error }) {
   const sign = value => createHmac('sha256', secret).update(value).digest('hex');
   const configured = () => ready && typeof secret === 'string' && secret.length >= 32;
-  const ipKey = request => sign((request.headers.get('x-vercel-forwarded-for') || request.headers.get('x-forwarded-for') || 'unknown').split(',')[0].trim());
+  const ipKey = request => sign((request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for') || 'unknown').split(',')[0].trim());
   function json(request, value, status = 200) {
     const headers = { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', Vary: 'Origin' };
     if (request.headers.get('origin') === origin) {

@@ -27,11 +27,13 @@ Open http://localhost:5173 (choose another port if occupied). No build, installa
 
 ## Suggest a business or report a listing
 
-Use **Suggest a business** below the map to open the new-business issue form. Use **Report a listing** for a general correction, or **Report incorrect listing** in a business's details to prefill its name, address, and direct map link.
+Use **Suggest a business** below the map or **Report incorrect listing** in a business's details. The on-site form needs no GitHub account and prefills the selected business's name and address. Submissions are intended for public GitHub review, so the form asks for business details and public-sharing consent, rather than personal contact information.
 
-The forms open on GitHub in a new tab. Visitors need a GitHub account to submit, and submissions are public. The forms ask for business information and evidence of bitcoin acceptance or the correction. They apply `merchant-suggestion` or `merchant-correction` plus `needs-review`, and assign the issue to `hotpixelgroup`.
+The anonymous intake integration is prepared in a draft until a Cloudflare **Workers Free** account is connected and the endpoint is deployed. The map remains on GitHub Pages. The free Worker and D1 queue enforce bounded inputs, durable quotas, and deduplication. GitHub Actions in this public repository converts accepted records into issues with `needs-review`, assigns them to `hotpixelgroup`, and does not expose a personal GitHub token. Publication may take several minutes or longer if GitHub delays a scheduled run.
 
-Issues enter the maintainer's review queue; they never edit the map automatically. After verifying a submission, update `dist/merchants.json` (and coordinate provenance where needed) through a pull request, then close the issue with the outcome. The map itself remains public and needs no account.
+Only free services are permitted: do not enable a paid Workers plan, paid add-ons, or larger paid Actions runners. Exhausting the free backend allowance pauses submissions rather than authorizing charges. See [backend setup and controls](backend/README.md). Keep the form unpublished until the real integration has been verified.
+
+The original GitHub issue templates remain available for contributors who prefer them. Reviewed issues never edit map data automatically; update the directory through a checked pull request after verifying a suggestion.
 
 ## Data and services
 

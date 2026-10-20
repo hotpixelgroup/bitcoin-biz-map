@@ -6,3 +6,7 @@ node_modules/
 !.env.example
 __pycache__/
 *.tar.gz
+
+.wrangler/
+.dev.vars
+.dev.vars.*

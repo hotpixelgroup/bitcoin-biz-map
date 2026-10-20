@@ -15,6 +15,12 @@ function text(value, label, max, required = false) {
   if ((required && !value) || value.length > max) throw new InputError(`${label} ${required && !value ? 'is required' : `must be at most ${max} characters`}.`);
   return value;
 }
+export function validatePaymentReport(value, { today = new Date().toISOString().slice(0,10) } = {}) {
+  if (!value || !['paid','failed'].includes(value.outcome) || !['lightning','onchain','unknown'].includes(value.rail)) throw new InputError('Choose a payment outcome and network.');
+  const date = value.date;
+  if (typeof date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(date) || !Number.isFinite(Date.parse(date)) || new Date(date).toISOString().slice(0,10)!==date || date>today || date<'2009-01-03') throw new InputError('Enter a valid visit date that is not in the future.');
+  return { outcome:value.outcome, date, rail:value.rail };
+}
 export function validateSubmission(data) {
   if (!data || typeof data !== 'object' || Array.isArray(data)) throw new InputError('Please complete the form.');
   if (!['suggestion', 'correction'].includes(data.kind)) throw new InputError('Choose a submission type.');
@@ -30,7 +36,15 @@ export function validateSubmission(data) {
     payment: text(data.payment, 'Payment method', 80),
     problem: text(data.problem, 'Correction type', 100),
     listingId: text(data.listingId, 'Listing ID', 30),
+    visitOutcome: text(data.visitOutcome, 'Payment outcome', 10),
+    visitDate: text(data.visitDate, 'Visit date', 10),
+    visitRail: text(data.visitRail, 'Payment network', 12),
+    paymentConditions: text(data.paymentConditions, 'Payment conditions', 500),
   };
+  if (result.visitOutcome) {
+    if (result.kind !== 'correction' || !result.listingId) throw new InputError('Choose the business you visited.');
+    validatePaymentReport({outcome:result.visitOutcome,date:result.visitDate,rail:result.visitRail});
+  } else if (result.visitDate || result.visitRail || result.paymentConditions) throw new InputError('Choose a payment outcome for this visit.');
   if (result.state && !BitcoinGeo.states[result.state]) throw new InputError('Choose a US state.');
   if (result.website) {
     let url;

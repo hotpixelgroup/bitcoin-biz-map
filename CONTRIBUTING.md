@@ -48,3 +48,9 @@ The workflows use short-lived `GITHUB_TOKEN` permissions, standard free runners,
 Approved operations are recorded in `dist/merchants.json` under `appliedReviews`. Preserve that history: it makes retries safe. The original-source importer refuses to overwrite a directory with community reviews. Reconcile future article/BTC Map refreshes in a separate file and a reviewed PR.
 
 National directory pages and CSV downloads read the same `dist/merchants.json`, so an approved update appears everywhere without regenerating exports. National IDs are supported alongside all original Arizona links. For nationwide source refreshes, use `scripts/national-directory.py` and the documented research process; do not replace the applied-review ledger.
+
+### Review visitor payment reports
+
+The two payment feedback buttons create anonymous issues with **payment-report**, **merchant-correction**, and **needs-review**. The prepared JSON contains `paymentReport` with an outcome (`paid` or `failed`), a visit date, and a rail (`lightning`, `onchain`, or `unknown`). Verify or edit the claim, date, and optional `merchant.paymentNotes`, then add **approved** as usual. Dates must be real and not in the future. A report can update the payment history even when no address or contact field changes.
+
+Approval records a reviewed visitor claim, not a maintainer test purchase. `lastPayment` preserves the most recent successful payment; `latestPaymentReport` records the latest success or difficulty, with an issue link for provenance. A failure does not automatically switch off Lightning/on-chain or delete a listing. Edit those fields or choose removal only when the evidence supports it. Earlier reports cannot replace newer dates. Reports awaiting review never appear as payment confirmations on the public map. History and conditions appear in the directory and CSV exports as well.

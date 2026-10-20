@@ -23,3 +23,7 @@ test('CSV exports preserve evidence and quote special characters without spreads
   assert.ok(text.includes('https://example.com/bitcoin'));
   assert.ok(text.includes('/bitcoin-biz-map/#us-btc1'));
 });
+test('CSV includes reviewed payment history and escapes payment conditions',()=>{
+ const csv=BitcoinDirectory.csv([{id:'az-008',name:'Cafe',lat:33.5,lon:-112.1,lastPayment:{date:'2026-10-18',rail:'lightning'},latestPaymentReport:{date:'2026-10-19',outcome:'failed'},paymentNotes:'=malicious()'}]);
+ for(const value of ['last_reviewed_payment_date','latest_payment_outcome','2026-10-18','lightning','failed',"'=malicious()"])assert.ok(csv.includes(value));
+});

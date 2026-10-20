@@ -121,3 +121,12 @@ test('anonymous corrections accept national listing IDs and validate US states',
   assert.throws(()=>validateSubmission({...base,state:'XX'}),/state/);
   assert.throws(()=>validateSubmission({...base,listingId:'us-btc1?x=1'}),/listing/);
 });
+
+test('anonymous payment reports validate dates and produce reviewable GitHub issues',async()=>{
+ const base={kind:'correction',name:'Test Cafe',address:'1 Test St, Phoenix, AZ',state:'AZ',listingId:'az-008',evidence:'I requested Lightning and paid at the counter.',consent:true,visitOutcome:'paid',visitDate:'2026-10-19',visitRail:'lightning',paymentConditions:'Ask the cashier.'};
+ const accepted=validateSubmission(base);assert.equal(accepted.visitOutcome,'paid');
+ const payload=issuePayload({id:'c'.repeat(64),receivedAt:'2026-10-20T12:00:00Z',submission:base});
+ assert(payload.labels.includes('payment-report'));assert(payload.labels.includes('needs-review'));assert.match(payload.body,/### Payment outcome\npaid/);assert.match(payload.title,/Payment report: paid/);
+ const f=fixture();assert.equal((await f.submit(base)).status,202);
+ for(const invalid of [{visitDate:'2026-02-30'},{visitDate:'2999-01-01'},{visitRail:'credit'},{visitOutcome:'verified'},{kind:'suggestion'},{listingId:''},{visitOutcome:''}])assert.throws(()=>validateSubmission({...base,...invalid}));
+});

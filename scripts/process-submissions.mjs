@@ -8,11 +8,12 @@ export function issuePayload(record) {
   if (!/^[a-f0-9]{64}$/.test(record.id || '') || !Number.isFinite(Date.parse(record.receivedAt))) throw new Error('Invalid queue record');
   const s = validateSubmission({ ...record.submission, consent: true });
   const correction = s.kind === 'correction';
+  const report = s.visitOutcome ? `\n\n### Payment outcome\n${s.visitOutcome}\n\n### Visit date\n${s.visitDate}\n\n### Payment rail\n${s.visitRail}\n\n### Payment conditions\n${quote(s.paymentConditions)}` : '';
   const listing = s.listingId ? `${MAP}#${s.listingId}` : 'Not supplied';
   return {
-    title: `[${correction ? 'Listing correction' : 'New business'}] ${s.name.replace(/[\r\n]/g, ' ').replace(/@/g, '＠')}`,
-    body: `Submitted by an **anonymous map visitor**. This is an unverified suggestion for maintainer review.\n\n### Business\n${quote(s.name)}\n\n### Address\n${quote(s.address)}\n\n### State\n${quote(s.state)}\n\n### Website\n${quote(s.website)}\n\n### ${correction ? 'Correction and evidence' : 'Bitcoin acceptance evidence'}\n${quote(s.evidence)}\n\n### Payment method / correction type\n${quote(correction ? s.problem : s.payment)}\n\n### Additional notes\n${quote(s.notes)}\n\n### Existing map listing\n${listing}\n\nReceived: ${record.receivedAt}\n\n<!-- anonymous-submission:${record.id} -->`,
-    labels: [correction ? 'merchant-correction' : 'merchant-suggestion', 'needs-review'],
+    title: `[${s.visitOutcome ? 'Payment report: '+s.visitOutcome : correction ? 'Listing correction' : 'New business'}] ${s.name.replace(/[\r\n]/g, ' ').replace(/@/g, '＠')}`,
+    body: `Submitted by an **anonymous map visitor**. This is an unverified suggestion for maintainer review.\n\n### Business\n${quote(s.name)}\n\n### Address\n${quote(s.address)}\n\n### State\n${quote(s.state)}\n\n### Website\n${quote(s.website)}\n\n### ${correction ? 'Correction and evidence' : 'Bitcoin acceptance evidence'}\n${quote(s.evidence)}${report}\n\n### Payment method / correction type\n${quote(correction ? s.problem : s.payment)}\n\n### Additional notes\n${quote(s.notes)}\n\n### Existing map listing\n${listing}\n\nReceived: ${record.receivedAt}\n\n<!-- anonymous-submission:${record.id} -->`,
+    labels: [correction ? 'merchant-correction' : 'merchant-suggestion', 'needs-review', ...(s.visitOutcome ? ['payment-report'] : [])],
     assignees: ['hotpixelgroup'],
   };
 }

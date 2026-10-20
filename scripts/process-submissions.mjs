@@ -1,4 +1,6 @@
 import { pathToFileURL } from 'node:url';
+import { readFileSync } from 'node:fs';
+import { makeProposal, reviewSection } from './map-review.mjs';
 import { validateSubmission, REPO, MAP } from '../backend/lib/intake.js';
 const api = `https://api.github.com/repos/${REPO}`;
 const quote = value => String(value || 'Not supplied').replace(/@/g, '＠').replace(/</g, '&lt;').replace(/>/g, '&gt;').split('\n').map(line => `> ${line}`).join('\n');
@@ -14,7 +16,7 @@ export function issuePayload(record) {
     assignees: ['hotpixelgroup'],
   };
 }
-export async function processQueue({ queueUrl, queueSecret, githubToken, fetcher = fetch }) {
+export async function processQueue({ queueUrl, queueSecret, githubToken, catalog = { merchants: [] }, fetcher = fetch }) {
   const endpoint = new URL(queueUrl);
   if (endpoint.protocol !== 'https:' || endpoint.pathname !== '/api/queue') throw new Error('Invalid private queue URL');
   const queueHeaders = { Authorization: `Bearer ${queueSecret}`, 'Content-Type': 'application/json' };
@@ -46,6 +48,7 @@ export async function processQueue({ queueUrl, queueSecret, githubToken, fetcher
     if (!issue) {
       // Do not retry a failed create here: a timeout may hide a successful
       // creation. The next workflow run checks the marker before retrying.
+      payload.body += reviewSection(await makeProposal(item.submission, catalog, { fetcher }), catalog);
       issue = await request(`${api}/issues`, { method: 'POST', headers: ghHeaders, body: JSON.stringify(payload) });
       existing.push(issue);
     }
@@ -58,5 +61,5 @@ export async function processQueue({ queueUrl, queueSecret, githubToken, fetcher
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const { SUBMISSION_QUEUE_URL, SUBMISSION_QUEUE_SECRET, GH_TOKEN } = process.env;
   if (!SUBMISSION_QUEUE_URL || !SUBMISSION_QUEUE_SECRET || !GH_TOKEN) throw new Error('Submission processor secrets are not configured');
-  await processQueue({ queueUrl: SUBMISSION_QUEUE_URL, queueSecret: SUBMISSION_QUEUE_SECRET, githubToken: GH_TOKEN });
+  await processQueue({ queueUrl: SUBMISSION_QUEUE_URL, queueSecret: SUBMISSION_QUEUE_SECRET, githubToken: GH_TOKEN, catalog: JSON.parse(readFileSync(new URL('../dist/merchants.json', import.meta.url), 'utf8')) });
 }

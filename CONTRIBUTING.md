@@ -32,3 +32,17 @@ from `main` only. No separate deployment secret is needed.
 
 To roll back, open a PR reverting the faulty commit, let checks pass, and squash
 merge it. The normal workflow republishes that version. Do not force-push `main`.
+
+## Approve a community submission
+
+1. Open an issue labeled **needs-review**. Under **Maintainer: publish this map update**, use the issue's **Edit** menu to review the prepared JSON. Check the payment evidence, category, city, and map pin. New suggestions use the free US Census geocoder when it returns one Arizona match; fill missing coordinates and their public source yourself.
+2. For a correction, edit the prepared listing to its desired final values. Nothing is inferred from a free-text complaint. Set `action` to `remove` for a closure, duplicate, or withdrawn bitcoin acceptance. Keep `listingId` and `expected` unchanged. For an unidentified listing, first fix the original report's map-listing URL, delete the generated section from its start/end comments, and remove/reapply **needs-review** to prepare the correct current record.
+3. Add **approved**. That is the publication approval: the bot creates a data-only pull request, explicitly runs **Validate site**, squash-merges through the existing protections, explicitly deploys Pages, marks the issue **published**, and closes it. The status comment links to the PR and deployment. There is no extra merge step.
+
+Only human maintainers with write, maintain, or admin access may approve. Remove **approved** to stop a pending update before merging. Editing the issue during processing also stops it. A listing fingerprint prevents stale corrections from overwriting a newer change. Missing data, duplicates, unsafe URLs, and corrections with no actual changes are blocked.
+
+If an issue receives **approval-blocked**, read the status comment, fix the JSON, and remove/reapply **approved**. To regenerate a stale correction, delete the generated section and remove/reapply **needs-review**, then review the new values. If merge succeeded but deployment failed, retrying resumes publication without duplicating the update. You can also run **Publish approved map submissions** from Actions with the issue number and mode `prepare` or `publish`; publication still requires the approved label and a human maintainer.
+
+The workflows use short-lived `GITHUB_TOKEN` permissions, standard free runners, and no personal token or new hosting service. GitHub's repository setting **Allow GitHub Actions to create and approve pull requests** must be enabled for PR creation; these workflows do not submit approval reviews or bypass branch rules. Because bot-created events do not run ordinary push deployment, the automation explicitly dispatches validation and Pages workflows. Keep `site.yml`'s **Validate site** job name aligned with the required branch check.
+
+Approved operations are recorded in `dist/merchants.json` under `appliedReviews`. Preserve that history: it makes retries safe. The original-source importer refuses to overwrite a directory with community reviews. Reconcile future article/BTC Map refreshes in a separate file and a reviewed PR.

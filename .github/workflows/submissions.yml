@@ -1,9 +1,5 @@
 name: Review anonymous submissions
 on:
-  # Temporary bootstrap trigger: removed after the first live integration test.
-  push:
-    branches: [anonymous-community-intake]
-    paths: [.github/workflows/submissions.yml]
   schedule:
     - cron: '3-58/5 * * * *'
   workflow_dispatch:

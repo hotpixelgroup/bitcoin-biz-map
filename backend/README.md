@@ -2,7 +2,7 @@
 
 The map stays on **GitHub Pages**. Anonymous forms send business details to a **Cloudflare Worker on the Workers Free plan**, backed by a **D1 database on that same free account**. A standard **GitHub Actions** workflow in this public repository polls the private queue and creates review issues with a short-lived repository token. No personal GitHub token is given to the backend.
 
-**Status:** code and local tests are ready, but deployment is pending Cloudflare account access. There are no provisioned backend resources or configured intake secrets. The public API URL in `dist/community-config.js` is deliberately empty. Do not merge or enable the form until the real integration has been tested.
+**Status:** deployed to the owner's existing account, verified as **Workers Free** in the Cloudflare dashboard on October 20, 2026. The public endpoint is `https://bitcoin-biz-map-intake.harry-4e8.workers.dev/api/submissions`; the private D1 binding and GitHub Actions secrets are configured. A live anonymous test created [review issue #7](https://github.com/hotpixelgroup/bitcoin-biz-map/issues/7), with the intended bot author, labels, assignee, and durable acknowledgment. No paid plan, paid add-on, or billing upgrade was enabled.
 
 ## Free-only policy
 

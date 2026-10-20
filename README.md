@@ -22,16 +22,16 @@ Open http://localhost:5173 (choose another port if occupied). No build, installa
 - Browser-local saved places and direct links to individual merchants.
 - Optional geolocation, public OSRM driving route previews in Bitcoin orange, and Google Maps navigation links.
 - A three-stop Scottsdale trail inspired by the article, plus random merchant discovery.
-- New-business suggestions and listing corrections through public GitHub issues, with the selected business prefilled in reports.
+- Anonymous new-business suggestions and listing corrections, with the selected business prefilled and submissions delivered to public GitHub review issues.
 - Responsive list/map switch, keyboard controls, and explicit network/location error states.
 
 ## Suggest a business or report a listing
 
 Use **Suggest a business** below the map or **Report incorrect listing** in a business's details. The on-site form needs no GitHub account and prefills the selected business's name and address. Submissions are intended for public GitHub review, so the form asks for business details and public-sharing consent, rather than personal contact information.
 
-The anonymous intake integration is prepared in a draft until a Cloudflare **Workers Free** account is connected and the endpoint is deployed. The map remains on GitHub Pages. The free Worker and D1 queue enforce bounded inputs, durable quotas, and deduplication. GitHub Actions in this public repository converts accepted records into issues with `needs-review`, assigns them to `hotpixelgroup`, and does not expose a personal GitHub token. Publication may take several minutes or longer if GitHub delays a scheduled run.
+The map remains on GitHub Pages. The deployed Cloudflare **Workers Free** API and private D1 queue enforce bounded inputs, durable quotas, and deduplication. GitHub Actions in this public repository converts accepted records into issues with `needs-review`, assigns them to `hotpixelgroup`, and does not expose a personal GitHub token. Publication may take several minutes or longer if GitHub delays a scheduled run.
 
-Only free services are permitted: do not enable a paid Workers plan, paid add-ons, or larger paid Actions runners. Exhausting the free backend allowance pauses submissions rather than authorizing charges. See [backend setup and controls](backend/README.md). Keep the form unpublished until the real integration has been verified.
+Only free services are permitted: do not enable a paid Workers plan, paid add-ons, or larger paid Actions runners. Exhausting the free backend allowance pauses submissions rather than authorizing charges. See [backend setup and controls](backend/README.md).
 
 The original GitHub issue templates remain available for contributors who prefer them. Reviewed issues never edit map data automatically; update the directory through a checked pull request after verifying a suggestion.
 
@@ -52,7 +52,7 @@ The map uses vendored Leaflet 1.9.4 and Leaflet.markercluster 1.5.3; base tiles 
 
 ## Validation
 
-`npm run check` tests GitHub issue URL generation, correct branch identification for every merchant, and query parameter encoding, then verifies JavaScript syntax and merchant count, uniqueness, coordinates, categories, cities, and source provenance. It also serves the bundle at the GitHub Pages project subpath and checks that the home page, local assets, license notices, and directory load successfully. The UI has also been checked in the browser for both themes, desktop/mobile layouts, search, combined city/category filters, saved-place persistence, business details, navigation URLs, and trail routing.
+`npm run check` tests anonymous intake validation, durable quotas, D1 SQL, issue delivery deduplication, GitHub issue URL generation, correct branch identification for every merchant, and query parameter encoding, then verifies JavaScript syntax and merchant count, uniqueness, coordinates, categories, cities, and source provenance. It also serves the bundle at the GitHub Pages project subpath and checks that the home page, local assets, license notices, and directory load successfully. The UI has also been checked in the browser for both themes, desktop/mobile layouts, search, combined city/category filters, saved-place persistence, business details, navigation URLs, and trail routing.
 
 ## Public deployment and project management
 

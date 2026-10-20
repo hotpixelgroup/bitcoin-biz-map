@@ -1,0 +1,8 @@
+{
+  "name":"bitcoin-biz-map-intake",
+  "private":true,
+  "type":"module",
+  "engines":{"node":">=24"},
+  "dependencies":{"@vercel/blob":"2.8.2"},
+  "scripts":{"test":"node --test test/*.test.js"}
+}

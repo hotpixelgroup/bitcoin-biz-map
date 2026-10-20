@@ -1,0 +1,31 @@
+name: Review anonymous submissions
+on:
+  schedule:
+    - cron: '3-58/5 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: anonymous-submission-processor
+  cancel-in-progress: false
+jobs:
+  create-issues:
+    if: vars.ANONYMOUS_SUBMISSIONS_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24'
+      - name: Create review issues from the private intake queue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SUBMISSION_QUEUE_URL: ${{ secrets.SUBMISSION_QUEUE_URL }}
+          SUBMISSION_QUEUE_SECRET: ${{ secrets.SUBMISSION_QUEUE_SECRET }}
+        run: node scripts/process-submissions.mjs

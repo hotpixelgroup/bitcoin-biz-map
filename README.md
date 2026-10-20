@@ -22,7 +22,16 @@ Open http://localhost:5173 (choose another port if occupied). No build, installa
 - Browser-local saved places and direct links to individual merchants.
 - Optional geolocation, public OSRM driving route previews in Bitcoin orange, and Google Maps navigation links.
 - A three-stop Scottsdale trail inspired by the article, plus random merchant discovery.
+- New-business suggestions and listing corrections through public GitHub issues, with the selected business prefilled in reports.
 - Responsive list/map switch, keyboard controls, and explicit network/location error states.
+
+## Suggest a business or report a listing
+
+Use **Suggest a business** below the map to open the new-business issue form. Use **Report a listing** for a general correction, or **Report incorrect listing** in a business's details to prefill its name, address, and direct map link.
+
+The forms open on GitHub in a new tab. Visitors need a GitHub account to submit, and submissions are public. The forms ask for business information and evidence of bitcoin acceptance or the correction. They apply `merchant-suggestion` or `merchant-correction` plus `needs-review`, and assign the issue to `hotpixelgroup`.
+
+Issues enter the maintainer's review queue; they never edit the map automatically. After verifying a submission, update `dist/merchants.json` (and coordinate provenance where needed) through a pull request, then close the issue with the outcome. The map itself remains public and needs no account.
 
 ## Data and services
 
@@ -41,7 +50,7 @@ The map uses vendored Leaflet 1.9.4 and Leaflet.markercluster 1.5.3; base tiles 
 
 ## Validation
 
-`npm run check` verifies JavaScript syntax and merchant count, uniqueness, coordinates, categories, cities, and source provenance. It also serves the bundle at the GitHub Pages project subpath and checks that the home page, local assets, license notices, and directory load successfully. The UI has also been checked in the browser for both themes, desktop/mobile layouts, search, combined city/category filters, saved-place persistence, business details, navigation URLs, and trail routing.
+`npm run check` tests GitHub issue URL generation, correct branch identification for every merchant, and query parameter encoding, then verifies JavaScript syntax and merchant count, uniqueness, coordinates, categories, cities, and source provenance. It also serves the bundle at the GitHub Pages project subpath and checks that the home page, local assets, license notices, and directory load successfully. The UI has also been checked in the browser for both themes, desktop/mobile layouts, search, combined city/category filters, saved-place persistence, business details, navigation URLs, and trail routing.
 
 ## Public deployment and project management
 

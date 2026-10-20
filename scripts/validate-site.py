@@ -53,10 +53,11 @@ try:
             assert response.status == 200
             assert len(response.read()) > 100, f'Empty asset: {asset}'
     with urlopen(urljoin(home, 'merchants.json')) as response:
-        assert len(json.load(response)['merchants']) == 219
+        merchants = json.load(response)['merchants']
+        assert merchants == json.loads((ROOT / 'merchants.json').read_text())['merchants']
     assert not (ROOT / '.openai').exists(), 'Hosting metadata must not be public'
     assert not any(p.is_symlink() for p in ROOT.rglob('*')), 'Pages bundle cannot contain symlinks'
-    print('Pages smoke test passed: home, relative assets, licenses, and all 219 listings work at /bitcoin-biz-map/.')
+    print(f'Pages smoke test passed: home, relative assets, licenses, and all {len(merchants)} listings work at /bitcoin-biz-map/.')
 finally:
     server.shutdown()
     server.server_close()

@@ -1,16 +1,40 @@
 name: Merchant correction
 description: Correct a location, address, or bitcoin acceptance listing.
+title: '[Listing correction] '
+labels: ['merchant-correction', 'needs-review']
+assignees: ['hotpixelgroup']
 body:
+  - type: markdown
+    attributes:
+      value: |
+        Corrections are reviewed by the maintainer before the map is updated.
+        This issue will be public. Include business information only, not personal details, wallet information, or transaction receipts.
   - type: input
     id: merchant
     attributes:
       label: Merchant name and address
     validations:
       required: true
+  - type: input
+    id: listing_url
+    attributes:
+      label: Link to the map listing
+      description: Prefilled when you report from a business's details on the map.
+  - type: dropdown
+    id: problem_type
+    attributes:
+      label: What needs correcting?
+      options:
+        - Address or map location
+        - Bitcoin payment acceptance
+        - Business is closed or has moved
+        - Business name, website, or phone
+        - Duplicate listing
+        - Something else
   - type: textarea
     id: correction
     attributes:
       label: Correction and public source
-      description: Explain the correction and link to a public source. Do not include personal information.
+      description: Describe the error and the correct information. Include a public source or describe a recent firsthand visit and its date.
     validations:
       required: true

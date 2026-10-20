@@ -1,6 +1,6 @@
 # Contributing
 
-Open an issue or submit a pull request. For merchant corrections, include a
+Use the **Suggest a Bitcoin business** or **Merchant correction** issue forms for listing changes, or open a general bug report or pull request. Submissions are public and reviewed by `hotpixelgroup` before the map is updated. For merchant corrections, include a
 public source and identify the specific branch/address of the business. Do not
 include customer information, wallet details, or private location history.
 

@@ -68,7 +68,7 @@ try:
         assert 1.8 < width / height < 2.0 and width >= 1200
         assert len(image) < 5 * 1024 * 1024
     assert len(parser.paths) >= 6, 'Expected local script and stylesheet assets'
-    for asset in parser.paths + ['merchants.json', 'vendor/Leaflet-LICENSE.txt', 'vendor/MarkerCluster-LICENSE.txt']:
+    for asset in parser.paths + ['directory.html', 'directory.js', 'directory-tools.js', 'geography.js', 'research-candidates.json', 'merchants.json', 'vendor/Leaflet-LICENSE.txt', 'vendor/MarkerCluster-LICENSE.txt']:
         with urlopen(urljoin(home, asset)) as response:
             assert response.status == 200
             assert len(response.read()) > 100, f'Empty asset: {asset}'

@@ -21,7 +21,11 @@ export async function runReview({ event, mode, token, fetcher = fetch, sleep = p
   }
   async function file(ref) {
     const result = await api(`/contents/dist/merchants.json?ref=${encodeURIComponent(ref)}`);
-    return { catalog: JSON.parse(Buffer.from(result.content, 'base64').toString()), sha: result.sha };
+    // Contents responses omit content for files larger than 1 MB. The national
+    // catalog uses the Git blob endpoint, which supports the complete file.
+    const blob = result.content ? result : await api(`/git/blobs/${result.sha}`);
+    if (blob.encoding && blob.encoding !== 'base64') throw Error('Unsupported catalog encoding');
+    return { catalog: JSON.parse(Buffer.from(blob.content, 'base64').toString()), sha: result.sha };
   }
   let issue = await api(`/issues/${number}`);
   const isBusiness = value => value.labels.some(label => ['merchant-suggestion', 'merchant-correction'].includes(label.name));

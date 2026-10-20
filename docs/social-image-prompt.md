@@ -1,0 +1,9 @@
+# Social share image
+
+Generated with the built-in imagegen tool on October 20, 2026.
+
+Saved asset: `dist/assets/sats-in-the-sun-social.png` (1730 × 909 PNG, approximately 2 MB). The wide composition uses the site's ivory, forest green, and Bitcoin orange palette. The static HTML includes absolute Open Graph and Twitter card image URLs, dimensions, and alt text. All merchant hash links share this site-wide preview because GitHub Pages serves static HTML.
+
+## Final prompt
+
+Create a beautiful finished 1200 by 630 pixel horizontal social link preview card for an existing Arizona bitcoin merchant map called 'sats in the sun'. Use case: ads-marketing. Asset: Open Graph social sharing image. Brand aesthetic: sophisticated independent desert travel field guide, modern editorial, warm ivory #f7f7f2, almost-black forest green #151a17, and Bitcoin orange #f7931a. A dramatic but restrained illustrated Sonoran Desert scene on the right: layered sandstone mountains, a saguaro cactus, round setting orange sun containing a crisp Bitcoin ₿ symbol, elegant orange map pins connected by a winding orange road in the foreground. Minimal fine grain print texture, precise flat illustration with subtle layered paper depth, lots of intentional negative space on the left. Integrated typography on left should be large, elegant bold modern geometric sans, exact text: 'sats in the sun' at top, then larger two-line headline 'Spend a little.' and 'Explore a lot.' with the second line in Bitcoin orange. Small supporting line 'Your Arizona bitcoin field guide.' near lower left. Make all text beautifully legible when the image is a small social card. Clear visual hierarchy, generous 65px safe margins, composition feels crafted, premium, sunny, adventurous. No additional text, no gradients, no device mockups, no photographs, no watermarks. This is the final designed social card itself, not a screenshot of a website. Output exact aspect ratio 1200:630.

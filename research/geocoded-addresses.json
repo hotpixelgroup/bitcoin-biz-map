@@ -1,0 +1,308 @@
+{
+  "800 Capps Ave, Nokomis, IL 62075-1415": {
+    "lat": 39.294196506113,
+    "lon": -89.279323637813,
+    "source": "US Census Geocoder / Public_AR_Current (address-range estimate)",
+    "matchedAddress": "800 CAPPS AVE, NOKOMIS, IL, 62075"
+  },
+  "1717 Philo Rd, Suite 10, Urbana, IL 61802": {
+    "lat": 40.098040437294,
+    "lon": -88.190818508493,
+    "source": "US Census Geocoder / Public_AR_Current (address-range estimate)",
+    "matchedAddress": "1717 PHILO RD, URBANA, IL, 61802"
+  },
+  "1810 Broad Ripple Ave #12, Indianapolis, IN 46220": {
+    "lat": 39.868701212291,
+    "lon": -86.129256945768,
+    "source": "US Census Geocoder / Public_AR_Current (address-range estimate)",
+    "matchedAddress": "1810 BROAD RIPPLE AVE, INDIANAPOLIS, IN, 46220"
+  },
+  "2394 Winewood Ave, Ann Arbor, MI 48103": {
+    "lat": 42.276507892789,
+    "lon": -83.779999802301,
+    "source": "US Census Geocoder / Public_AR_Current (address-range estimate)",
+    "matchedAddress": "2394 WINEWOOD AVE, ANN ARBOR, MI, 48103"
+  },
+  "3450 Hooker Road, Pinckney, MI 48169": {
+    "lat": 42.46306652816,
+    "lon": -83.875824808817,
+    "source": "US Census Geocoder / Public_AR_Current (address-range estimate)",
+    "matchedAddress": "3450 HOOKER RD, PINCKNEY, MI, 48169"
+  },
+  "135 North Old Woodward Avenue, Suite 270, Birmingham, MI 48009": {
+    "lat": 42.547262804955,
+    "lon": -83.214915641448,
+    "source": "US Census Geocoder / Public_AR_Current (address-range estimate)",
+    "matchedAddress": "135 N OLD WOODWARD AVE, BIRMINGHAM, MI, 48009"
+  },
+  "4534 Penridge Rd, Toledo, OH 43615": {
+    "lat": 41.683314601397,
+    "lon": -83.650501654727,
+    "source": "US Census Geocoder / Public_AR_Current (address-range estimate)",
+    "matchedAddress": "4534 PENRIDGE RD, TOLEDO, OH, 43615"
+  },
+  "164 Main Cross Street S, Hawesville, KY 42348": {
+    "lat": 37.902177494727,
+    "lon": -86.748374018029,
+    "source": "US Census Geocoder / Public_AR_Current (address-range estimate)",
+    "matchedAddress": "164 MAIN CROSS ST N, HAWESVILLE, KY, 42348"
+  },
+  "915 Alley A, Columbia, MO 65201": {
+    "lat": 38.951043452521,
+    "lon": -92.32732132913,
+    "source": "US Census Geocoder / Public_AR_Current (address-range estimate)",
+    "matchedAddress": "915 A ALY, COLUMBIA, MO, 65201"
+  },
+  "33 N Sarah Street, St. Louis, MO 63108": {
+    "lat": 38.637882791488,
+    "lon": -90.246540714439,
+    "source": "US Census Geocoder / Public_AR_Current (address-range estimate)",
+    "matchedAddress": "33 N SARAH ST, SAINT LOUIS, MO, 63108"
+  },
+  "824 W 50th Street, Minneapolis, MN 55419": {
+    "lat": 44.91237012853,
+    "lon": -93.289884708932,
+    "source": "US Census Geocoder / Public_AR_Current (address-range estimate)",
+    "matchedAddress": "824 W 50TH ST, MINNEAPOLIS, MN, 55419"
+  },
+  "357 N La Brea Ave, Los Angeles, CA 90036": {
+    "lat": 34.077359310362,
+    "lon": -118.344106430974,
+    "source": "US Census Geocoder / Public_AR_Current (address-range estimate)",
+    "matchedAddress": "357 N LA BREA AVE, LOS ANGELES, CA, 90036"
+  },
+  "1871 W Commonwealth Ave, Fullerton, CA 92833": {
+    "lat": 33.870138371402,
+    "lon": -117.962519971257,
+    "source": "US Census Geocoder / Public_AR_Current (address-range estimate)",
+    "matchedAddress": "1871 W COMMONWEALTH AVE, FULLERTON, CA, 92833"
+  },
+  "805 Larrabee St, West Hollywood, CA 90069": {
+    "lat": 34.085482870748,
+    "lon": -118.383422338947,
+    "source": "US Census Geocoder / Public_AR_Current (address-range estimate)",
+    "matchedAddress": "805 N LARRABEE ST, WEST HOLLYWOOD, CA, 90069"
+  },
+  "397 3rd Ave, Suite D, Chula Vista, CA 91910": {
+    "lat": 32.637952755194,
+    "lon": -117.078532395393,
+    "source": "US Census Geocoder / Public_AR_Current (address-range estimate)",
+    "matchedAddress": "397 3RD AVE, CHULA VISTA, CA, 91910"
+  },
+  "509 Olive Way, Suite 824, Seattle, WA 98101": {
+    "lat": 47.612691077695,
+    "lon": -122.337168661161,
+    "source": "US Census Geocoder / Public_AR_Current (address-range estimate)",
+    "matchedAddress": "509 OLIVE WAY, SEATTLE, WA, 98101"
+  },
+  "8777 W Rayford Rd, The Woodlands, TX 77389": {
+    "lat": 30.113151660193,
+    "lon": -95.551187041999,
+    "source": "US Census Geocoder / Public_AR_Current (address-range estimate)",
+    "matchedAddress": "8777 W RAYFORD RD, THE WOODLANDS, TX, 77389"
+  },
+  "340 Coit Rd Suite 500, Plano, TX 75075": {
+    "lat": 33.001870287307,
+    "lon": -96.76762786978,
+    "source": "US Census Geocoder / Public_AR_Current (address-range estimate)",
+    "matchedAddress": "340 COIT RD, PLANO, TX, 75075"
+  },
+  "4151 Southwest Freeway #131, Houston, TX 77027": {
+    "lat": 29.728569206124,
+    "lon": -95.443659153329,
+    "source": "US Census Geocoder / Public_AR_Current (address-range estimate)",
+    "matchedAddress": "4151 SOUTHWEST FWY, HOUSTON, TX, 77027"
+  },
+  "1530 W. Loop South, Houston, TX 77027": {
+    "lat": 29.752367638997,
+    "lon": -95.45607540753,
+    "source": "US Census Geocoder / Public_AR_Current (address-range estimate)",
+    "matchedAddress": "1530 W LOOP S SVC RD, HOUSTON, TX, 77056"
+  },
+  "6600 Green Rd, Mabelvale, AR 72103": {
+    "lat": 34.625827624137,
+    "lon": -92.353111962792,
+    "source": "US Census Geocoder / Public_AR_Current (address-range estimate)",
+    "matchedAddress": "6600 GREEN RD, MABELVALE, AR, 72103"
+  },
+  "21070 N Pima Rd, Scottsdale, AZ 85255": {
+    "lat": 33.681210790725,
+    "lon": -111.890802926609,
+    "source": "US Census Geocoder / Public_AR_Current (address-range estimate)",
+    "matchedAddress": "21070 N PIMA RD, SCOTTSDALE, AZ, 85255"
+  },
+  "14555 W Indian School Rd #420, Goodyear, AZ 85395": {
+    "lat": 33.490464264845,
+    "lon": -112.377894114784,
+    "source": "US Census Geocoder / Public_AR_Current (address-range estimate)",
+    "matchedAddress": "14555 W INDIAN SCHOOL RD, GOODYEAR, AZ, 85395"
+  },
+  "20755 W McDowell Rd #100, Buckeye, AZ 85396": {
+    "lat": 33.466883910326,
+    "lon": -112.505955853662,
+    "source": "US Census Geocoder / Public_AR_Current (address-range estimate)",
+    "matchedAddress": "20755 W MCDOWELL RD, BUCKEYE, AZ, 85396"
+  },
+  "14843 W Bell Rd #100, Surprise, AZ 85374": {
+    "lat": 33.63851953076,
+    "lon": -112.379840382439,
+    "source": "US Census Geocoder / Public_AR_Current (address-range estimate)",
+    "matchedAddress": "14843 W BELL RD, SURPRISE, AZ, 85374"
+  },
+  "920 E Riggs Rd, Chandler, AZ 85249": {
+    "lat": 33.218850010009,
+    "lon": -111.827270591804,
+    "source": "US Census Geocoder / Public_AR_Current (address-range estimate)",
+    "matchedAddress": "920 E RIGGS RD, CHANDLER, AZ, 85249"
+  },
+  "4425 S Mountain Rd #109, Mesa, AZ 85212": {
+    "lat": 33.334928806098,
+    "lon": -111.59220441038,
+    "source": "US Census Geocoder / Public_AR_Current (address-range estimate)",
+    "matchedAddress": "4425 S MOUNTAIN RD, MESA, AZ, 85212"
+  },
+  "2072 E Southern Ave A103, Tempe, AZ 85282": {
+    "lat": 33.39305474469,
+    "lon": -111.897252529201,
+    "source": "US Census Geocoder / Public_AR_Current (address-range estimate)",
+    "matchedAddress": "2072 E SOUTHERN AVE, TEMPE, AZ, 85282"
+  },
+  "14709 S 855 W, Bluffdale, UT 84065": {
+    "lat": 40.484867419946,
+    "lon": -111.915928449965,
+    "source": "US Census Geocoder / Public_AR_Current (address-range estimate)",
+    "matchedAddress": "14709 S 855 W, BLUFFDALE, UT, 84065"
+  },
+  "2653 W Hampden Ave, Sheridan, CO 80110": {
+    "lat": 39.653330201387,
+    "lon": -105.019458498679,
+    "source": "US Census Geocoder / Public_AR_Current (address-range estimate)",
+    "matchedAddress": "2653 W HAMPDEN AVE, SHERIDAN, CO, 80110"
+  },
+  "821 S Main St, Kemmerer, WY 83101": {
+    "lat": 41.794631569789,
+    "lon": -110.537098549116,
+    "source": "US Census Geocoder / Public_AR_Current (address-range estimate)",
+    "matchedAddress": "821 S MAIN ST, KEMMERER, WY, 83101"
+  },
+  "1712 Pioneer Ave Suite 101, Cheyenne, WY 82001": {
+    "lat": 41.133327500365,
+    "lon": -104.818517367184,
+    "source": "US Census Geocoder / Public_AR_Current (address-range estimate)",
+    "matchedAddress": "1712 PIONEER AVE, CHEYENNE, WY, 82001"
+  },
+  "1 Fremont Street, Las Vegas, NV 89101": {
+    "lat": 36.169218268745,
+    "lon": -115.140743317566,
+    "source": "US Census Geocoder / Public_AR_Current (address-range estimate)",
+    "matchedAddress": "1 FREMONT ST, LAS VEGAS, NV, 89101"
+  },
+  "301 Fremont Street, Las Vegas, NV 89101": {
+    "lat": 36.169486447468,
+    "lon": -115.141349414488,
+    "source": "US Census Geocoder / Public_AR_Current (address-range estimate)",
+    "matchedAddress": "301 FREMONT ST, LAS VEGAS, NV, 89101"
+  },
+  "620 N Reading Road, Ephrata, PA 17522": {
+    "lat": 40.203286235101,
+    "lon": -76.156757555965,
+    "source": "US Census Geocoder / Public_AR_Current (address-range estimate)",
+    "matchedAddress": "620 N READING RD, EPHRATA, PA, 17522"
+  },
+  "325 Sentry Parkway, Building 5 West, Suite 200, Blue Bell, PA 19422": {
+    "lat": 40.134967393572,
+    "lon": -75.272592260261,
+    "source": "US Census Geocoder / Public_AR_Current (address-range estimate)",
+    "matchedAddress": "325 SENTRY PKWY, BLUE BELL, PA, 19422"
+  },
+  "600 Eagleview Boulevard, Suite 300, Exton, PA 19341": {
+    "lat": 40.065118750894,
+    "lon": -75.679027026098,
+    "source": "US Census Geocoder / Public_AR_Current (address-range estimate)",
+    "matchedAddress": "600 EAGLEVIEW BLVD, EXTON, PA, 19341"
+  },
+  "630 Freedom Business Center, 3rd Floor, King of Prussia, PA 19406": {
+    "lat": 40.092128117178,
+    "lon": -75.414757625091,
+    "source": "US Census Geocoder / Public_AR_Current (address-range estimate)",
+    "matchedAddress": "630 FREEDOM BUSINESS CENTER DR, KING OF PRUSSIA, PA, 19406"
+  },
+  "890 Mantua Pike, Woodbury Heights, NJ 08097": {
+    "lat": 39.818517506263,
+    "lon": -75.162665931834,
+    "source": "US Census Geocoder / Public_AR_Current (address-range estimate)",
+    "matchedAddress": "890 MANTUA PIKE, WOODBURY HEIGHTS, NJ, 08097"
+  },
+  "401 N Broadway, Gloucester City, NJ 08030": {
+    "lat": 39.902377392387,
+    "lon": -75.120250814363,
+    "source": "US Census Geocoder / Public_AR_Current (address-range estimate)",
+    "matchedAddress": "401 N BROADWAY, GLOUCESTER CITY, NJ, 08030"
+  },
+  "74 West 47th Street, New York, NY 10036": {
+    "lat": 40.757615497496,
+    "lon": -73.980990589501,
+    "source": "US Census Geocoder / Public_AR_Current (address-range estimate)",
+    "matchedAddress": "74 W 47TH ST, NEW YORK, NY, 10036"
+  },
+  "345 W. Broadway, New York, NY 10013": {
+    "lat": 40.722637594886,
+    "lon": -74.003462300056,
+    "source": "US Census Geocoder / Public_AR_Current (address-range estimate)",
+    "matchedAddress": "345 W BROADWAY, NEW YORK, NY, 10013"
+  },
+  "85 Washington Pl, New York, NY 10011": {
+    "lat": 40.732141225081,
+    "lon": -74.000016980763,
+    "source": "US Census Geocoder / Public_AR_Current (address-range estimate)",
+    "matchedAddress": "85 W WASHINGTON PL, NEW YORK, NY, 10011"
+  },
+  "10330 Hardin Valley Road Suite 100, Knoxville, TN 37932": {
+    "lat": 35.955962333599,
+    "lon": -84.140569057858,
+    "source": "US Census Geocoder / Public_AR_Current (address-range estimate)",
+    "matchedAddress": "10330 HARDIN VALLEY RD, KNOXVILLE, TN, 37932"
+  },
+  "371 East Paces Ferry Rd Suite 850, Atlanta, GA 30305": {
+    "lat": 33.838841890524,
+    "lon": -84.375750219988,
+    "source": "US Census Geocoder / Public_AR_Current (address-range estimate)",
+    "matchedAddress": "371 E PACES FERRY RD NE, ATLANTA, GA, 30305"
+  },
+  "2166 Lavista Rd NE, Atlanta, GA 30329": {
+    "lat": 33.817666919995,
+    "lon": -84.313068546954,
+    "source": "US Census Geocoder / Public_AR_Current (address-range estimate)",
+    "matchedAddress": "2166 LAVISTA RD NE, ATLANTA, GA, 30329"
+  },
+  "1607 Big Mill Road, Williamston, NC 27892": {
+    "lat": 35.800189609917,
+    "lon": -77.049726834735,
+    "source": "US Census Geocoder / Public_AR_Current (address-range estimate)",
+    "matchedAddress": "1607 BIG MILL RD, WILLIAMSTON, NC, 27892"
+  },
+  "5 Trotter Hills Circle, Pinehurst, NC 28374": {
+    "lat": 35.173702586752,
+    "lon": -79.472075966027,
+    "source": "US Census Geocoder / Public_AR_Current (address-range estimate)",
+    "matchedAddress": "5 TROTTER HILLS CIR, PINEHURST, NC, 28374"
+  },
+  "15 Chester St., Front Royal, VA 22630": {
+    "lat": 38.917999080006,
+    "lon": -78.19029719696,
+    "source": "US Census Geocoder / Public_AR_Current (address-range estimate)",
+    "matchedAddress": "15 CHESTER ST, FRONT ROYAL, VA, 22630"
+  },
+  "9926 Main St, Fairfax, VA 22031": {
+    "lat": 38.843530354248,
+    "lon": -77.288845764994,
+    "source": "US Census Geocoder / Public_AR_Current (address-range estimate)",
+    "matchedAddress": "9926 MAIN ST, FAIRFAX, VA, 22031"
+  },
+  "6911 North FM 620 Suite A-200, Austin, TX 78730": {
+    "lat": 30.401697,
+    "lon": -97.853261,
+    "source": "https://rjorthodontics.com/ (merchant-published GeoCoordinates in JSON-LD)",
+    "checkedAt": "2026-10-20"
+  }
+}

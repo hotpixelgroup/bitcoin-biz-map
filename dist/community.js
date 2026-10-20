@@ -33,6 +33,7 @@
   const status = query('#submission-status');
   let challenge = null, challengeAt = 0, session = 0, sending = false;
   const field = name => form.elements.namedItem(name);
+  field('state').innerHTML = '<option value="">Choose a state</option>' + Object.entries(BitcoinGeo.states).sort((a,b)=>a[1].name.localeCompare(b[1].name)).map(([code,s]) => `<option value="${code}">${s.name}</option>`).join('');
   function message(value) { status.textContent = value; status.hidden = !value; }
   function endpoint() {
     const value = globalThis.BitcoinCommunityConfig?.endpoint;
@@ -58,11 +59,12 @@
     field('kind').value = kind;
     field('listingId').value = merchant?.id || '';
     field('name').value = merchant?.name || '';
+    field('state').value = merchant?.state || '';
     field('address').value = merchant?.address || merchant?.city || '';
     field('website').value = /^https?:\/\//.test(merchant?.website || '') ? merchant.website : '';
     const correction = kind === 'correction';
     query('#submission-title').textContent = correction ? 'Help keep the map right.' : 'Suggest a business.';
-    query('#submission-intro').textContent = correction ? 'A wrong address or a place that no longer takes bitcoin? Let us know.' : 'Know an Arizona spot that takes bitcoin? Help another Bitcoiner find it.';
+    query('#submission-intro').textContent = correction ? 'A wrong address or a place that no longer takes bitcoin? Let us know.' : 'Know a US spot that takes bitcoin? Help another Bitcoiner find it.';
     query('#submission-evidence-label').textContent = correction ? 'What is incorrect, and what should it say?' : 'How do you know they accept bitcoin?';
     query('#submission-payment-label').hidden = correction;
     query('#submission-problem-label').hidden = !correction;

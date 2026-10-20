@@ -113,3 +113,11 @@ test('body size and content type checks run before intake', async () => {
   assert.equal((await f.app.publicHandler(new Request('https://test/api/submissions', { method: 'POST', headers, body: 'x'.repeat(12001) }))).status, 413);
   assert.equal((await f.app.publicHandler(new Request('https://test/api/submissions', { method: 'POST', headers: { origin: ORIGIN, 'Content-Type': 'text/plain' }, body: '{}' }))).status, 415);
 });
+
+test('anonymous corrections accept national listing IDs and validate US states', () => {
+  const base = {kind:'correction',name:'Fixture business',address:'1 Example Street, Los Angeles, CA 90012',state:'CA',listingId:'us-btc12345',evidence:'A public merchant source',consent:true};
+  assert.equal(validateSubmission(base).state,'CA');
+  assert.equal(validateSubmission(base).listingId,'us-btc12345');
+  assert.throws(()=>validateSubmission({...base,state:'XX'}),/state/);
+  assert.throws(()=>validateSubmission({...base,listingId:'us-btc1?x=1'}),/listing/);
+});

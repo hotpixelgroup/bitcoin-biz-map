@@ -1,3 +1,4 @@
+import '../../dist/geography.js';
 import { createHash, createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 export const ORIGIN = 'https://hotpixelgroup.github.io';
 export const MAP = `${ORIGIN}/bitcoin-biz-map/`;
@@ -21,6 +22,7 @@ export function validateSubmission(data) {
   const result = {
     kind: data.kind,
     name: text(data.name, 'Business name', 120, true),
+    state: text(data.state, 'State', 2),
     address: text(data.address, 'Business address', 300, true),
     website: text(data.website, 'Website', 500),
     evidence: text(data.evidence, 'Payment evidence or correction', 2000, true),
@@ -29,13 +31,14 @@ export function validateSubmission(data) {
     problem: text(data.problem, 'Correction type', 100),
     listingId: text(data.listingId, 'Listing ID', 30),
   };
+  if (result.state && !BitcoinGeo.states[result.state]) throw new InputError('Choose a US state.');
   if (result.website) {
     let url;
     try { url = new URL(result.website); } catch { throw new InputError('Enter a complete website URL, starting with https://.'); }
     if (!['https:', 'http:'].includes(url.protocol) || url.username || url.password) throw new InputError('Enter a public http or https business website.');
     result.website = url.href;
   }
-  if (result.listingId && !/^az-\d{3,8}$/.test(result.listingId)) throw new InputError('The selected listing is invalid.');
+  if (result.listingId && !BitcoinGeo.validId(result.listingId)) throw new InputError('The selected listing is invalid.');
   return result;
 }
 async function readBody(request) {

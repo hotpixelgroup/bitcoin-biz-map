@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { START, END, fingerprint, makeProposal, reviewSection, parseProposal, applyProposal, submissionFromIssue } from '../scripts/map-review.mjs';
 import { runReview, authorized } from '../scripts/review-submission.mjs';
-const baseMerchant = { city: 'Phoenix', category: 'Coffee Shops & Cafés', lat: 33.5, lon: -112.1, osmId: 'node:123', website: 'https://example.com/', phone: '+1 602 555 0100', lightning: true, onchain: false, verified: '' };
+const baseMerchant = { city: 'Phoenix', state: 'AZ', category: 'Coffee Shops & Cafés', lat: 33.5, lon: -112.1, osmId: 'node:123', website: 'https://example.com/', phone: '+1 602 555 0100', lightning: true, onchain: false, verified: '' };
 const catalog = { source: 'https://example.com/source', imported: '2026-10-20', merchants: [
   { ...baseMerchant, id: 'az-001', name: 'Fixture Cafe', address: '1 Fixture St, Phoenix, AZ' },
   { ...baseMerchant, id: 'az-008', name: 'Echo Coffee', address: '2902 North 68th Street, Scottsdale, AZ 85251', city: 'Scottsdale', phone: '+1 480 422 4081' },
@@ -41,7 +41,7 @@ test('approved addition, correction, and removal preserve the directory and audi
   const addition = await makeProposal({ kind: 'suggestion', name: 'A new cafe', address: '1 Test St, Phoenix, AZ', evidence: 'Public confirmation' }, catalog, { fetcher: noGeocode });
   Object.assign(addition.merchant, { category: 'Coffee Shops & Cafés', lat: 33.5, lon: -112.1, coordinateSource: 'Maintainer-verified public map pin' });
   const added = applyProposal(catalog, addition, 99, '2026-10-20T20:00:00Z');
-  assert.equal(added.catalog.merchants.length, catalog.merchants.length + 1); assert.equal(added.id, 'az-1000099');
+  assert.equal(added.catalog.merchants.length, catalog.merchants.length + 1); assert.equal(added.id, 'us-az-1000099');
   assert.equal(added.catalog.merchants.at(-1).reviewIssue, 'https://github.com/hotpixelgroup/bitcoin-biz-map/issues/99');
   assert.equal(applyProposal(added.catalog, addition, 99).alreadyApplied, true);
   const update = await correction(); update.merchant.phone = '+1-480-422-4081';
@@ -84,9 +84,10 @@ async function workflowFixture() {
     if (path.startsWith('/git/ref/heads/')) { const ref = path.split('/heads/')[1]; return state.refs[ref] ? result({ object: { sha: state.refs[ref] } }) : new Response('{}', { status: 404 }); }
     if (path === '/git/refs') { state.refs[body.ref.replace('refs/heads/', '')] = body.sha; return result({}); }
     if (path === '/contents/dist/merchants.json') {
-      if (method === 'GET') { const ref = u.searchParams.get('ref'); const data = state.files[state.refs[ref] || ref]; return result({ sha: 'blob-sha', content: Buffer.from(JSON.stringify(data)).toString('base64') }); }
+      if (method === 'GET') { const ref = u.searchParams.get('ref'); const data = state.files[state.refs[ref] || ref]; state.lastReadData = data; return result({ sha: 'blob-sha', encoding: state.largeCatalog ? 'none' : 'base64', content: state.largeCatalog ? '' : Buffer.from(JSON.stringify(data)).toString('base64') }); }
       state.files['data-sha'] = JSON.parse(Buffer.from(body.content, 'base64').toString()); state.refs[body.branch] = 'data-sha'; return result({ commit: { sha: 'data-sha' } });
     }
+    if (path === '/git/blobs/blob-sha') { state.blobReads = (state.blobReads || 0) + 1; return result({encoding:'base64',content:Buffer.from(JSON.stringify(state.lastReadData)).toString('base64')}); }
     if (path === '/pulls' && method === 'GET') return result([]);
     if (path === '/pulls') { state.runs.push({ id: 100, event: 'pull_request', head_sha: 'data-sha', status: 'completed', conclusion: 'action_required', pull_requests: [{ number: 124, head: { repo: { name: 'bitcoin-biz-map', url: 'https://api.github.com/repos/hotpixelgroup/bitcoin-biz-map' } } }] }); return result({ number: 124, html_url: 'https://github.com/hotpixelgroup/bitcoin-biz-map/pull/124' }); }
     if (path === '/pulls/124/files') return result([{ filename: 'dist/merchants.json' }]);
@@ -124,4 +125,27 @@ test('a post-merge deployment failure is recoverable without applying or merging
   f.state.failDeployment = false; await runReview(f.options); assert.equal(f.issue.state, 'closed');
   assert.equal(f.state.writes.filter(write => write.path === '/pulls/124/merge').length, 1);
   assert.equal(f.state.writes.filter(write => write.path === '/contents/dist/merchants.json').length, 1);
+});
+test('national review accepts matching state coordinates and geocodes only the requested state', async () => {
+  const submission = { kind:'suggestion',name:'National fixture',address:'1 Example St, Los Angeles, CA 90012',state:'CA',evidence:'A public dated merchant statement' };
+  const hit = {addressComponents:{state:'CA'},coordinates:{x:-118.24,y:34.05}};
+  const proposal = await makeProposal(submission,catalog,{fetcher:async()=>Response.json({result:{addressMatches:[hit]}})});
+  assert.equal(proposal.merchant.state,'CA'); assert.equal(proposal.merchant.lat,34.05);
+  proposal.merchant.category='Shopping & Services';
+  const result = applyProposal(catalog,proposal,200);
+  assert.equal(result.id,'us-ca-1000200');
+  assert.equal(result.catalog.merchants.at(-1).verification.type,'maintainer-reviewed');
+  proposal.merchant.state='AZ'; assert.throws(()=>applyProposal(catalog,proposal,201),/state/);
+  const mismatch = await makeProposal(submission,catalog,{fetcher:async()=>Response.json({result:{addressMatches:[{...hit,addressComponents:{state:'AZ'}}]}})});
+  assert.equal(mismatch.merchant.lat,null);
+});
+test('national correction links identify the exact listing', () => {
+  const issue = {labels:[{name:'merchant-correction'}],body:'### Existing map listing\nhttps://hotpixelgroup.github.io/bitcoin-biz-map/?state=CA#us-btc12345\n\n### State\nCA'};
+  assert.equal(submissionFromIssue(issue).listingId,'us-btc12345');
+});
+
+test('review reads Git blobs when the national catalog exceeds the Contents API inline limit', async () => {
+  const f = await workflowFixture(); f.state.largeCatalog = true;
+  await runReview(f.options);
+  assert.ok(f.state.blobReads > 0); assert.ok(f.state.merged);
 });

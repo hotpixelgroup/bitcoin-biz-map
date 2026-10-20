@@ -1,5 +1,5 @@
 name: Suggest a Bitcoin business
-description: Suggest an Arizona business that accepts bitcoin for maintainer review.
+description: Suggest a US business that accepts bitcoin for maintainer review.
 title: '[New business] '
 labels: ['merchant-suggestion', 'needs-review']
 assignees: ['hotpixelgroup']
@@ -20,7 +20,7 @@ body:
     id: address
     attributes:
       label: Street address and city
-      description: Include the specific branch, suite/unit, Arizona city, and ZIP code if known.
+      description: Include the specific branch, suite/unit, city, US state, and ZIP code if known.
     validations:
       required: true
   - type: input

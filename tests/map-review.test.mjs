@@ -1,10 +1,12 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
 import { START, END, fingerprint, makeProposal, reviewSection, parseProposal, applyProposal, submissionFromIssue } from '../scripts/map-review.mjs';
 import { runReview, authorized } from '../scripts/review-submission.mjs';
-const original = JSON.parse(readFileSync(new URL('../dist/merchants.json', import.meta.url), 'utf8'));
-const catalog = { source: original.source, imported: original.imported, merchants: structuredClone(original.merchants.slice(0, 8)) };
+const baseMerchant = { city: 'Phoenix', category: 'Coffee Shops & Cafés', lat: 33.5, lon: -112.1, osmId: 'node:123', website: 'https://example.com/', phone: '+1 602 555 0100', lightning: true, onchain: false, verified: '' };
+const catalog = { source: 'https://example.com/source', imported: '2026-10-20', merchants: [
+  { ...baseMerchant, id: 'az-001', name: 'Fixture Cafe', address: '1 Fixture St, Phoenix, AZ' },
+  { ...baseMerchant, id: 'az-008', name: 'Echo Coffee', address: '2902 North 68th Street, Scottsdale, AZ 85251', city: 'Scottsdale', phone: '+1 480 422 4081' },
+] };
 const echo = catalog.merchants.find(row => row.id === 'az-008');
 const correction = async () => makeProposal({ kind: 'correction', listingId: echo.id, evidence: 'Normalize existing phone punctuation; keep the same number.' }, catalog);
 const noGeocode = async () => Response.json({ result: { addressMatches: [] } });
@@ -44,7 +46,7 @@ test('approved addition, correction, and removal preserve the directory and audi
   assert.equal(applyProposal(added.catalog, addition, 99).alreadyApplied, true);
   const update = await correction(); update.merchant.phone = '+1-480-422-4081';
   const changed = applyProposal(catalog, update, 100); assert.equal(changed.catalog.merchants.find(row => row.id === echo.id).phone, '+1-480-422-4081');
-  assert.deepEqual(changed.catalog.merchants[0], catalog.merchants[0]); assert.equal(catalog.merchants.length, 8);
+  assert.deepEqual(changed.catalog.merchants[0], catalog.merchants[0]); assert.equal(catalog.merchants.length, 2);
   const removal = await makeProposal({ kind: 'correction', listingId: echo.id, evidence: 'Public closure notice' }, changed.catalog); removal.action = 'remove';
   const removed = applyProposal(changed.catalog, removal, 101); assert.ok(!removed.catalog.merchants.some(row => row.id === echo.id)); assert.equal(removed.catalog.appliedReviews.length, 2);
 });

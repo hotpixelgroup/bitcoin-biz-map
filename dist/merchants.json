@@ -117,10 +117,13 @@
       "lon": -111.935022,
       "osmId": "node:1560663801",
       "website": "https://www.echocoffee.com/",
-      "phone": "+1 480 422 4081",
+      "phone": "+1-480-422-4081",
       "lightning": true,
       "onchain": false,
-      "verified": "2025-11-26"
+      "verified": "2025-11-26",
+      "coordinateSource": "",
+      "reviewIssue": "https://github.com/hotpixelgroup/bitcoin-biz-map/issues/10",
+      "reviewedAt": "2026-10-20"
     },
     {
       "id": "az-009",
@@ -3289,5 +3292,15 @@
       "onchain": false,
       "verified": "2026-01-29"
     }
-  ]
+  ],
+  "appliedReviews": [
+    {
+      "issue": 10,
+      "hash": "4b2c0d87227e574e93cdb09d33e4bdb9ff440260bb9f253868c57c8dd0c2a305",
+      "action": "update",
+      "listingId": "az-008",
+      "reviewedAt": "2026-10-20T22:39:32.656Z"
+    }
+  ],
+  "updated": "2026-10-20T22:39:32.656Z"
 }

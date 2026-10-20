@@ -10,7 +10,7 @@ include customer information, wallet details, or private location history.
    and dark themes and a narrow/mobile layout for visual changes.
 4. Submit a pull request to `main` with the change and validation details.
 
-There is no build step or dependency installation. Vendored libraries retain
+There is no build step or dependency installation. When changing `app.js`, `community.js`, or `styles.css`, update their `?v=` cache version in `dist/index.html` so returning visitors receive matching assets. Vendored libraries retain
 their licenses. Update their versions and notices together. Merchant coordinates
 must come from a documented source, and database changes retain ODbL attribution.
 

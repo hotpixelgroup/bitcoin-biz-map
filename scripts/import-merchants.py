@@ -4,6 +4,8 @@ Usage: python3 scripts/import-merchants.py ARTICLE_HTML BTCMAP_ELEMENTS_JSON
 from html.parser import HTMLParser
 import json,re,sys,unicodedata,difflib
 from pathlib import Path
+if Path('dist/merchants.json').exists() and json.loads(Path('dist/merchants.json').read_text()).get('appliedReviews'):
+ raise SystemExit('Community-reviewed updates exist. Reconcile the refreshed source in a separate file and reviewed PR; do not overwrite the live directory or its appliedReviews history.')
 class Directory(HTMLParser):
  def __init__(self):super().__init__();self.tag=None;self.buf='';self.category=None;self.rows=[]
  def handle_starttag(self,t,a):

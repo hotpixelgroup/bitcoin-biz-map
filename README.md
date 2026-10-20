@@ -4,7 +4,7 @@
 
 [![Site checks and Pages](https://github.com/hotpixelgroup/bitcoin-biz-map/actions/workflows/site.yml/badge.svg)](https://github.com/hotpixelgroup/bitcoin-biz-map/actions/workflows/site.yml)
 
-A responsive, map-first guide to the 219 Arizona businesses in [Bitcoin Magazine’s October 19, 2026 article](https://bitcoinmagazine.com/culture/pita-cafe-arizona-bitcoin).
+A responsive, map-first guide to Arizona bitcoin businesses, starting with the 219 listings in [Bitcoin Magazine’s October 19, 2026 article](https://bitcoinmagazine.com/culture/pita-cafe-arizona-bitcoin).
 
 ## Run locally
 
@@ -33,11 +33,11 @@ The map remains on GitHub Pages. The deployed Cloudflare **Workers Free** API an
 
 Only free services are permitted: do not enable a paid Workers plan, paid add-ons, or larger paid Actions runners. Exhausting the free backend allowance pauses submissions rather than authorizing charges. See [backend setup and controls](backend/README.md).
 
-The original GitHub issue templates remain available for contributors who prefer them. Reviewed issues never edit map data automatically; update the directory through a checked pull request after verifying a suggestion.
+The original GitHub issue templates remain available for contributors who prefer them. To approve a submission, review or edit its prepared **Map update** JSON and add **approved**. The bot creates a data-only PR, validates it, merges it through the protected branch, deploys Pages, and closes the issue after publication. See the [maintainer approval guide](CONTRIBUTING.md#approve-a-community-submission). Corrections require explicit field changes; closures and withdrawn bitcoin acceptance use a reviewed removal.
 
 ## Data and services
 
-`dist/merchants.json` contains all 219 article listings. The directory is a snapshot imported October 20, 2026; it does not claim current verification of acceptance or opening hours. 217 coordinates and available phone, website, and payment metadata are matched to BTC Map / OpenStreetMap. Two address coordinates use the US Census geocoder and are recorded in `scripts/coordinate-overrides.json`. Gover Property Management has a BTC Map location but no article street address. Its city is derived from that location. Lightning badges appear only when BTC Map explicitly marks Lightning support.
+`dist/merchants.json` began with the 219 article listings imported October 20, 2026 and now supports community-reviewed additions, corrections, and removals; it does not claim current verification of acceptance or opening hours. 217 coordinates and available phone, website, and payment metadata are matched to BTC Map / OpenStreetMap. Two address coordinates use the US Census geocoder and are recorded in `scripts/coordinate-overrides.json`. Gover Property Management has a BTC Map location but no article street address. Its city is derived from that location. Lightning badges use BTC Map data or explicit maintainer-reviewed payment evidence. Community-reviewed changes link back to their public review issues.
 
 To refresh the dataset, obtain the source article HTML and the public BTC Map v2 elements JSON, then run:
 

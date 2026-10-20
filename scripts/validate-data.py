@@ -7,8 +7,7 @@ assert len({r['id'] for r in rows})==len(rows), 'IDs must be unique'
 assert len({(r['name'],r['address']) for r in rows})==len(rows), 'Duplicate merchant entries'
 for r in rows:
  assert 31<r['lat']<37.1 and -115<r['lon']<-109, f"Invalid Arizona coordinates: {r['name']}"
+ assert isinstance(r['lightning'],bool) and isinstance(r['onchain'],bool), f"Invalid payment flags: {r['name']}"
  assert r['category'] and r['city'], f"Missing filter metadata: {r['name']}"
  assert r['osmId'] or r.get('coordinateSource'), f"Missing coordinate source: {r['name']}"
-assert sum(r['name']=='Pita Cafe' for r in rows)==1
-assert sum(r['name']=='Echo Coffee' for r in rows)==1
 print(f'Validated all {len(rows)} merchants: unique listings, Arizona coordinates, categories, cities, and coordinate sources.')

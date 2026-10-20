@@ -34,7 +34,7 @@ The repository and database are fixed by the server implementation; submissions 
 - Signed ten-minute form challenge, short minimum completion time, and honeypot. These are basic abuse controls, not a CAPTCHA or a guarantee against determined bots.
 - D1 atomic capped counters serialize quotas across requests using one query per budget, keeping each submission below the Free plan's per-request query limit. Cloudflare's trusted client IP header is HMAC-hashed; raw IP addresses are never stored in records or GitHub issues. Cloudflare may process request metadata under its own hosting policies. Worker observability logs are disabled in configuration.
 - Duplicate content on the same UTC day reuses its receipt. Queue entries remain private until published as a GitHub issue. No account, name, email, wallet details, or receipts are requested from visitors.
-- The scheduled processor uses fixed issue destinations, labels, and assignee; neutralizes mentions/HTML; and includes a stable submission marker. It recognizes only its own bot's prior issues, including closed issues, when recovering from an acknowledgment failure. Failed issue creation is not blindly retried.
+- The scheduled processor appends structured maintainer review data (including a suggested Census map pin for a unique Arizona match), uses fixed issue destinations, labels, and assignee; neutralizes mentions/HTML; and includes a stable submission marker. It recognizes only its own bot's prior issues, including closed issues, when recovering from an acknowledgment failure. Failed issue creation is not blindly retried.
 - Acknowledgment deletes the pending record after creating a processed receipt. The midnight UTC processing window prunes rate records after forty-eight hours and receipts after thirty days. Unprocessed suggestions remain queued so outages do not silently discard them.
 - Private queue reads and acknowledgment require the separate shared secret. `GITHUB_TOKEN` only exists inside the issue-writing Actions job, with `issues: write` and `contents: read` permissions. Browser files contain only a public URL.
 
@@ -47,3 +47,7 @@ Forms preserve entered data when the service returns an error and only report re
 ## Operations
 
 Check **Review anonymous submissions** when the queue is delayed. The concurrency group prevents simultaneous processors. Disable repository variable `ANONYMOUS_SUBMISSIONS_ENABLED` to pause publication; records remain private in D1. Disable the Worker route as well if intake must pause. Rotate the shared secret on both sides together. Use reviewed PRs to deploy backend updates with Wrangler, and keep the account on Workers Free. No Vercel services or pay-as-you-go stores are used.
+
+## Publishing reviewed submissions
+
+Review the issue’s generated **Map update** section, edit the desired listing values, then add **approved**. The separate GitHub approval workflow creates and validates a data-only PR, merges it through branch protection, and dispatches Pages deployment. Only a human maintainer can approve. The Worker never gains repository write access. See [the approval guide](../CONTRIBUTING.md#approve-a-community-submission).

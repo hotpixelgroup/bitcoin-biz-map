@@ -30,7 +30,7 @@ test('navigation respects mobile waypoint and URL limits with and without a chos
  assert.throws(()=>core.mapsUrl(merchants,origin));assert.throws(()=>core.mapsUrl([{lat:NaN,lon:0}]));
 });
 test('offline city and ZIP suggestions distinguish street numbers from ZIP codes',()=>{
- assert.equal(core.areas(merchants,'12345').length,0);
+ assert.equal(core.areas([...merchants,{...merchants[0],address:'12345 Test St, Phoenix, AZ'}],'12345').length,0);
  assert.equal(core.areas(merchants,'85001')[0].count,5);
  assert.equal(core.areas(merchants,'phoenix, az')[0].type,'area');
  assert.equal(core.areas(merchants,'x').length,0);

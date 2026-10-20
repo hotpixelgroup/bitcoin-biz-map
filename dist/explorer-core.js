@@ -46,7 +46,7 @@
     if (q.length<2) return [];
     const zip = /^\d{5}$/.test(q), groups = new Map();
     for (const m of merchants) {
-      const code = [...(m.address || '').matchAll(/\b\d{5}(?:-\d{4})?\b/g)].at(-1)?.[0].slice(0,5);
+      const code = (m.address || '').match(/\b[A-Z]{2}\s+(\d{5})(?:-\d{4})?(?:,?\s+(?:USA|United States))?\s*$/i)?.[1];
       const label = `${m.city}, ${m.state}${zip ? ' '+code : ''}`;
       if (zip ? code!==q : !label.toLowerCase().includes(q)) continue;
       const group = groups.get(label) || {label,lat:0,lon:0,count:0};

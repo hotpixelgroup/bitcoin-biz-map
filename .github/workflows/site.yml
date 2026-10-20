@@ -34,6 +34,12 @@ jobs:
           python-version: '3.14'
       - name: Validate JavaScript, directory, and Pages assets
         run: npm run check
+      - name: Verify the free Cloudflare Worker bundle
+        env:
+          WRANGLER_SEND_METRICS: 'false'
+        run: |
+          npm ci --prefix backend --ignore-scripts
+          npm run check:bundle --prefix backend
 
   deploy:
     name: Deploy GitHub Pages

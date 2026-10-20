@@ -5,8 +5,7 @@ on this repository's Security tab. Do not disclose exploit details, credentials,
 or personal data in public issues. General bugs and public merchant-data
 corrections can be submitted as issues.
 
-The current `main` branch is supported. This static app has no accounts,
-payments, server-side storage, or application secrets. It uses browser-local
+The current `main` branch is supported. The public map has no accounts or payments. The optional anonymous intake service stores business submissions privately in D1 before publishing them as review issues. Its shared queue secret stays in Workers secrets and GitHub Actions secrets, never in browser files. It uses browser-local
 storage for saved places and requests geolocation only after a visitor asks.
 Requested routes send coordinates to OSRM, while navigation opens Google Maps.
 Map tiles and fonts load from their external providers.

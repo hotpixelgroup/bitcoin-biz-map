@@ -1,0 +1,52 @@
+name: Suggest a Bitcoin business
+description: Suggest an Arizona business that accepts bitcoin for maintainer review.
+title: '[New business] '
+labels: ['merchant-suggestion', 'needs-review']
+assignees: ['hotpixelgroup']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping the map grow! Suggestions are reviewed by the maintainer before a listing is added.
+        This issue will be public. Share business information only, not personal contact details, wallet information, or transaction receipts.
+  - type: input
+    id: business_name
+    attributes:
+      label: Business name
+      placeholder: Name of the business
+    validations:
+      required: true
+  - type: textarea
+    id: address
+    attributes:
+      label: Street address and city
+      description: Include the specific branch, suite/unit, Arizona city, and ZIP code if known.
+    validations:
+      required: true
+  - type: input
+    id: website
+    attributes:
+      label: Business website or public listing
+      description: A business website, BTC Map link, or other public business page.
+      placeholder: https://
+  - type: textarea
+    id: evidence
+    attributes:
+      label: How do you know they accept bitcoin?
+      description: Link to public confirmation, or describe a recent firsthand payment and when it happened. Do not upload receipts or wallet details.
+    validations:
+      required: true
+  - type: dropdown
+    id: payment
+    attributes:
+      label: Bitcoin payment methods
+      options:
+        - Not sure
+        - Lightning
+        - On-chain
+        - Both Lightning and on-chain
+  - type: textarea
+    id: notes
+    attributes:
+      label: Anything else the maintainer should know?
+      description: For example, business category or useful tips for paying with bitcoin.

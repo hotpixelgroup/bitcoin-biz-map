@@ -1,0 +1,16 @@
+name: Merchant correction
+description: Correct a location, address, or bitcoin acceptance listing.
+body:
+  - type: input
+    id: merchant
+    attributes:
+      label: Merchant name and address
+    validations:
+      required: true
+  - type: textarea
+    id: correction
+    attributes:
+      label: Correction and public source
+      description: Explain the correction and link to a public source. Do not include personal information.
+    validations:
+      required: true

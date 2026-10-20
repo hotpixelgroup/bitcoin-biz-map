@@ -1,1 +1,19 @@
-{"name":"sats-in-the-sun","private":true,"version":"1.0.0","description":"An interactive map of 219 Arizona bitcoin merchants","scripts":{"dev":"python3 -m http.server 5173 --directory dist","check":"node --check dist/app.js && python3 scripts/validate-data.py"}}
+{
+  "name": "sats-in-the-sun",
+  "private": true,
+  "version": "1.0.0",
+  "description": "An interactive map of 219 Arizona bitcoin merchants",
+  "scripts": {
+    "dev": "python3 -m http.server 5173 --directory dist",
+    "check": "node --check dist/app.js && python3 scripts/validate-data.py && python3 scripts/validate-site.py"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hotpixelgroup/bitcoin-biz-map.git"
+  },
+  "homepage": "https://hotpixelgroup.github.io/bitcoin-biz-map/",
+  "engines": {
+    "node": ">=24"
+  }
+}

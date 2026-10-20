@@ -1,4 +1,8 @@
 .DS_Store
 node_modules/
-.openai/.local/
+.openai/
+.env
+.env.*
+!.env.example
+__pycache__/
 *.tar.gz

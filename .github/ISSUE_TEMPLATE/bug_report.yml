@@ -1,0 +1,15 @@
+name: Bug report
+description: Report a problem with the map or interface.
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What happened?
+      description: Include steps to reproduce and the expected result. Do not include private location data.
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and device
+      placeholder: e.g. Safari on iPhone

@@ -1,0 +1,60 @@
+/* Shared responsive rules; match BitcoinExplorer.COMPACT_WIDTH (1023px). */
+.brand{flex-shrink:0}.brand-mark{flex-shrink:0}.brand>span:last-child{white-space:nowrap}.brand-sub{white-space:normal}
+.explorer{min-height:620px;height:clamp(620px,calc(100dvh - 300px),1000px)}
+.business-list{min-height:0}.card-content,.card-address{max-width:100%}.detail-panel,.directory-row{overflow-wrap:anywhere}
+#business-list:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--orange);outline-offset:2px}
+.trip-panel li>button{min-width:44px;min-height:44px}.save-button{width:44px;height:44px;top:10px;right:0;display:grid;place-items:center}.card-content h3{margin-right:32px}
+button,a,input,select,textarea{touch-action:manipulation}
+#location-dialog,#submission-dialog,#story-dialog{max-height:calc(100dvh - 24px);overflow:auto;scrollbar-gutter:stable}
+#location-dialog .dialog-close,#submission-dialog .dialog-close,#story-dialog .dialog-close{position:sticky;top:0;float:right;z-index:2}
+.directory-name,.directory-evidence>a{overflow-wrap:anywhere}.directory-toolbar>*{min-width:0}.state-index{grid-template-columns:repeat(auto-fit,minmax(160px,1fr))}
+.state-heading{flex-wrap:wrap}.directory-page .header nav{flex-shrink:0}
+@media(max-width:1023px){
+  .header{padding:0 4%;gap:8px}.header nav{margin-left:auto}.header .brand{font-size:16px;gap:7px}.header .icon-button{width:44px;height:44px}.header .nav-item{min-height:44px;display:inline-flex;align-items:center;justify-content:center}
+  .header nav #explore-nav,.header nav #story-nav{display:none}.header .brand-sub{white-space:normal}
+  .explorer{height:clamp(560px,78dvh,900px);min-height:560px;--map-cover:44%}
+  .explorer[data-sheet=peek]{--map-cover:106px}.explorer[data-sheet=full]{--map-cover:86%}.explorer.detail-open{--map-cover:60%}.explorer.picking{--map-cover:0px}
+  .explorer.map-view .map-controls{top:64px;right:12px}.map-controls button{width:40px;height:44px}.map-controls{padding:2px}
+  .explorer.map-view>.mobile-toggle{left:12px;right:auto;top:156px;bottom:auto;min-height:44px;padding:11px 15px}
+  .explorer.map-view .map-legend{left:12px;top:112px;bottom:auto;max-width:calc(100% - 82px);min-height:32px;font-size:9px}
+  .explorer.map-view .area-controls{top:60px;left:12px;max-width:calc(100% - 82px)}.area-controls button{min-height:44px;padding:10px 12px}
+  .explorer.map-view .leaflet-bottom{bottom:var(--map-cover)}.leaflet-control-attribution{font-size:8px!important;max-width:100%}
+  .explorer.map-view .detail-panel{max-height:60%;padding:22px}.explorer.detail-open .area-controls,.explorer.detail-open .map-controls{display:none}
+  .explorer.map-view.detail-open>.mobile-toggle{top:60px}
+  .explorer.map-view .sheet-bar{position:sticky;top:0;background:var(--surface);z-index:2;min-height:54px}
+  .explorer.map-view .sidebar-bottom{position:sticky;bottom:0;z-index:2}.sidebar-bottom button,.sidebar-bottom a{min-height:40px;display:inline-flex;align-items:center}
+  .explorer:not(.map-view) .sidebar-top{max-height:70%;overflow:auto}.explorer:not(.map-view) .business-list{min-height:130px;padding-bottom:64px}
+  .national-filters select,.city-select select,.search-wrap input{font-size:16px;min-height:44px}.search-wrap{height:48px}.near-button{font-size:11px;min-height:44px}.chip{font-size:11px;min-height:40px;padding:8px 10px}
+  .category-filters{gap:6px}.national-filters label{font-size:11px}.list-heading{font-size:11px}.list-heading select{font-size:12px;min-height:40px}
+  .location-banner button{font-size:12px;min-height:44px}.location-banner strong{font-size:14px}.location-banner span{font-size:12px}
+  .card-content h3{font-size:15px}.card-address{font-size:12px}.card-tags,.bitcoin-badge,.card-evidence .evidence-badge{font-size:10px}.card-trip{min-height:40px;font-size:11px}
+  .detail-panel .secondary-button,.detail-panel .primary-button,.detail-links a,.detail-report{min-height:44px}.detail-links{flex-wrap:wrap;gap:6px 14px}.detail-panel p{font-size:12px}
+  .trip-panel li{gap:5px}.trip-panel li>div{overflow-wrap:anywhere}.trip-panel li>button{min-width:40px}.trip-actions>*{min-height:44px}
+  .directory-page .header{height:auto;min-height:90px;flex-wrap:wrap;padding-top:10px;padding-bottom:10px}.directory-page .brand{font-size:16px}.directory-page .header nav{margin-left:0}.directory-page .nav-item{min-height:44px}
+  .directory-toolbar{flex-wrap:wrap}.directory-toolbar label:first-child{flex-basis:100%}.state-index{grid-template-columns:repeat(2,minmax(0,1fr))}.state-index a{min-height:44px;align-items:center;overflow-wrap:anywhere}
+}
+@media(max-width:360px){
+  .header{gap:4px}.header .brand{font-size:14px;gap:5px}.header .brand-mark{height:30px;width:30px;font-size:24px}.header .brand-sub{display:none}
+  .header nav #saved-nav{font-size:0;padding:6px}.header nav #saved-nav:before{content:'Saved';font-size:10px}.header nav .nav-item:nth-child(3){padding:6px;font-size:9px}.header nav #saved-count{font-size:10px}
+  .intro{gap:8px}.intro h1{font-size:26px}.intro-stat{min-width:76px}.intro-stat span{font-size:8px}.intro-stat strong{font-size:27px}
+  .location-banner>div:last-child{flex-direction:column}.location-banner button{width:100%}.trip-panel li{flex-wrap:wrap}.trip-panel li>div{flex-basis:calc(100% - 40px)}
+  .directory-page .header nav{width:100%;justify-content:space-between}.directory-intro h1{font-size:38px;letter-spacing:-1.8px}.evidence-grid{grid-template-columns:1fr}.state-heading>div:last-child{width:100%;justify-content:space-between}
+}
+@media(max-width:1023px) and (max-height:500px){
+  .intro{min-height:110px;padding:15px 0}.intro h1{font-size:26px;margin:6px 0}.intro h1 span{display:inline}.intro p{max-width:none}.intro-stat{display:none}
+  .location-banner{flex-direction:row;align-items:center;padding:12px;gap:12px}.location-banner>div:first-child{flex:1;min-width:0}.location-banner>div:last-child{flex-shrink:0;flex-direction:column;width:170px}.location-banner span{font-size:10px}.location-banner button{min-height:40px;padding:7px;font-size:11px}
+  .explorer{height:max(360px,calc(100dvh - 20px));min-height:360px;max-height:none}.explorer.map-view .detail-panel{max-height:55%}.explorer.detail-open{--map-cover:55%}
+}
+@media(min-width:1024px) and (max-height:700px){.intro{min-height:130px}.explorer{height:600px;min-height:600px}}
+@media(prefers-reduced-motion:reduce){.sidebar{transition:none!important}}
+@media(max-width:430px){
+  .header .brand{font-size:14px;gap:5px}.header .brand-mark{width:32px;height:32px;font-size:25px}.header .brand-sub{display:none}
+  .header nav #saved-nav{font-size:0;padding:6px}.header nav #saved-nav:before{content:'Saved';font-size:10px}.header nav #saved-count{font-size:10px}
+}
+@media(max-width:1023px){
+  .intro .eyebrow{font-size:9px;line-height:1.6}.intro-stat span{display:block;font-size:10px;line-height:1.5}
+  .header .brand-sub{font-size:7px;letter-spacing:.8px;line-height:1.35;width:128px;max-width:128px}
+  .trip-panel li>button{min-width:44px}
+}
+@media(max-width:1023px){.explorer:not(.map-view) .sidebar-top{max-height:calc(100% - 220px)}}
+@media(max-width:430px) and (max-height:500px){.location-banner{flex-direction:column;align-items:stretch}.location-banner>div:last-child{width:auto}}

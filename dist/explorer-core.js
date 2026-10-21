@@ -1,6 +1,7 @@
 'use strict';
 (() => {
   const MAX_STOPS = 4;
+  const COMPACT_WIDTH = 1023;
   const validPoint = p => p && Number.isFinite(p.lat) && Number.isFinite(p.lon) && Math.abs(p.lat) <= 90 && Math.abs(p.lon) <= 180;
   function distance(a, b) {
     const rad = Math.PI / 180, dlat = (b.lat-a.lat)*rad, dlon = (b.lon-a.lon)*rad;
@@ -13,6 +14,13 @@
   function bounds(south,north,west,east) {
     const wrap = n => ((n+180)%360+360)%360-180;
     return {south,north,west:east-west>=360?-180:wrap(west),east:east-west>=360?180:wrap(east)};
+  }
+  function mapFrame(width,height,{compact=false,cover=0,detailWidth=0}={}) {
+    const right=Math.min(24,width*.1);
+    const left=Math.min(compact?20:detailWidth?detailWidth+40:24,Math.max(20,width-right-100));
+    const top=Math.min(compact?112:80,height*.32);
+    const bottom=Math.min(compact?Math.max(24,cover+16):48,Math.max(24,height-top-56));
+    return {topLeft:[left,top],bottomRight:[right,bottom],center:[left+(width-left-right)/2,top+(height-top-bottom)/2]};
   }
   function tripIds(value, merchants) {
     const available = new Set(merchants.map(m=>m.id));
@@ -54,5 +62,5 @@
     }
     return [...groups.values()].map(g=>({...g,lat:g.lat/g.count,lon:g.lon/g.count,type:'area'})).sort((a,b)=>b.count-a.count||a.label.localeCompare(b.label)).slice(0,8);
   }
-  globalThis.BitcoinExplorer = Object.freeze({MAX_STOPS,validPoint,distance,inside,bounds,tripIds,parseTrip,shareTrip,mapsUrl,areas});
+  globalThis.BitcoinExplorer = Object.freeze({MAX_STOPS,COMPACT_WIDTH,mapFrame,validPoint,distance,inside,bounds,tripIds,parseTrip,shareTrip,mapsUrl,areas});
 })();

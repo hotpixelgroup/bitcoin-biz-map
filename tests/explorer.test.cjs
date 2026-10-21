@@ -75,3 +75,20 @@ test('an embedded browser that never responds still returns timeout fallback',as
  await new Promise(resolve=>setImmediate(resolve));t.mock.timers.tick(13500);
  await pending;
 });
+test('map framing keeps selected points inside the uncovered area at every supported size',()=>{
+ assert.equal(core.COMPACT_WIDTH,1023);
+ for(const [width,height,compact,cover,detailWidth] of [[292,558,true,335,0],[357,656,true,394,0],[520,358,true,197,0],[940,620,true,372,0],[626,620,false,0,340],[1280,900,false,0,340]]){
+  const frame=core.mapFrame(width,height,{compact,cover,detailWidth});const [x,y]=frame.center;
+  assert(x>=frame.topLeft[0]&&x<=width-frame.bottomRight[0]);assert(y>=frame.topLeft[1]&&y<=height-frame.bottomRight[1]);
+  assert(y<height-cover);if(!compact&&detailWidth)assert(x>detailWidth+20);
+  assert(height-frame.topLeft[1]-frame.bottomRight[1]>=56);
+ }
+});
+test('CSS and map interactions share the tablet breakpoint',()=>{
+ const {readFileSync}=require('node:fs');
+ const styles=readFileSync(require.resolve('../dist/styles.css'),'utf8');
+ const responsive=readFileSync(require.resolve('../dist/responsive.css'),'utf8');
+ assert(styles.includes(`max-width:${core.COMPACT_WIDTH}px`));assert(responsive.includes(`max-width:${core.COMPACT_WIDTH}px`));
+ assert(!/max-width:760px|min-width:761px/.test(styles+responsive));
+ for(const page of ['index.html','directory.html'])assert(/href="responsive\.css\?v=[^"]+"/.test(readFileSync(require.resolve('../dist/'+page),'utf8')));
+});

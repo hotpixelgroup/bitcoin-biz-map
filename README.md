@@ -65,6 +65,10 @@ The optional geocoder contacts the free US Census service only for unmatched mer
 
 The map uses vendored Leaflet 1.9.4 and Leaflet.markercluster 1.5.3; base tiles are © OpenStreetMap contributors (ODbL). Theme filters affect only base tiles, keeping merchant pins and routes orange. OSRM’s public demo endpoint supplies road geometry and non-traffic estimates; for larger production traffic, configure a managed or self-hosted routing service and an appropriate tile provider. Saved places are device-local. Route previews send the requested coordinates to OSRM only after the visitor requests the route. Navigation opens Google Maps.
 
+## Responsive layouts
+
+Phones and tablets through 1023 CSS pixels use a full-width map and bottom places panel; larger screens use the side-by-side list and map. Map framing accounts for open panels, and a selected business has its own pin layer so clustering cannot hide it. A resize observer updates map dimensions and framing when the viewport changes. The narrowest headers, short landscape screens, dialog scrolling, keyboard focus, and long business names are included in the [viewport audit](docs/qa/responsive-audit.md).
+
 ## Validation
 
 `npm run check` tests anonymous intake validation, durable quotas, D1 SQL, issue delivery deduplication, GitHub issue URL generation, correct branch identification for every merchant, and query parameter encoding, then verifies JavaScript syntax and merchant count, uniqueness, coordinates, categories, cities, and source provenance. It also serves the bundle at the GitHub Pages project subpath and checks that the home page, local assets, license notices, and directory load successfully. National regression tests cover US state validation, national listing IDs, stale/future verification dates, incomplete addresses, CSV formula escaping, and Git blob reads for catalogs exceeding the Contents API inline size limit. The UI has also been checked in the browser for both themes, desktop/mobile layouts, search, combined city/category filters, saved-place persistence, business details, navigation URLs, and trail routing.

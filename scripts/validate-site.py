@@ -23,6 +23,30 @@ class Handler(SimpleHTTPRequestHandler):
     def log_message(self, *args):
         pass
 
+class ExplorerLayout(HTMLParser):
+    """The view switch must remain usable when either panel is hidden."""
+    def __init__(self):
+        super().__init__()
+        self.stack = []
+        self.explorer = None
+        self.toggle_parent = None
+
+    def handle_starttag(self, tag, attrs):
+        attrs = dict(attrs)
+        node = (tag, attrs)
+        if 'explorer' in attrs.get('class', '').split():
+            self.explorer = node
+        if attrs.get('id') == 'mobile-toggle':
+            self.toggle_parent = self.stack[-1] if self.stack else None
+        if tag not in ('area','base','br','col','embed','hr','img','input','link','meta','param','source','track','wbr','use'):
+            self.stack.append(node)
+
+    def handle_endtag(self, tag):
+        for index in range(len(self.stack)-1, -1, -1):
+            if self.stack[index][0] == tag:
+                self.stack = self.stack[:index]
+                break
+
 class Assets(HTMLParser):
     def __init__(self):
         super().__init__()
@@ -49,6 +73,10 @@ try:
         html = response.read().decode()
     assert 'Sats in the Sun' in html
     assert 'signin-with-chatgpt' not in html
+    layout = ExplorerLayout()
+    layout.feed(html)
+    assert layout.explorer and 'map-view' in layout.explorer[1]['class'].split(), 'Fresh visits must open the map'
+    assert layout.toggle_parent is layout.explorer, 'Map/list switch must be outside both switched panels'
     parser = Assets()
     parser.feed(html)
     assert parser.meta.get('og:type') == 'website'

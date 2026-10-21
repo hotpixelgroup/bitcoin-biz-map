@@ -15,6 +15,12 @@
     const wrap = n => ((n+180)%360+360)%360-180;
     return {south,north,west:east-west>=360?-180:wrap(west),east:east-west>=360?180:wrap(east)};
   }
+  function areaSearch(filters, area, merchants, states = {}) {
+    const normalize = value => String(value || '').toLowerCase().replace(/,/g,' ').replace(/\s+/g,' ').trim();
+    const query = normalize(filters.query);
+    const locationQuery = query && (/^\d{5}$/.test(query) || Object.entries(states).some(([code,state]) => query === normalize(code) || query === normalize(state.name)) || merchants.some(m => query === normalize(m.city) || query === normalize(`${m.city} ${m.state}`)));
+    return {area,region:'',city:'',radius:null,query:locationQuery?'':filters.query};
+  }
   function mapFrame(width,height,{compact=false,cover=0,detailWidth=0}={}) {
     const right=Math.min(24,width*.1);
     const left=Math.min(compact?20:detailWidth?detailWidth+40:24,Math.max(20,width-right-100));
@@ -62,5 +68,5 @@
     }
     return [...groups.values()].map(g=>({...g,lat:g.lat/g.count,lon:g.lon/g.count,type:'area'})).sort((a,b)=>b.count-a.count||a.label.localeCompare(b.label)).slice(0,8);
   }
-  globalThis.BitcoinExplorer = Object.freeze({MAX_STOPS,COMPACT_WIDTH,mapFrame,validPoint,distance,inside,bounds,tripIds,parseTrip,shareTrip,mapsUrl,areas});
+  globalThis.BitcoinExplorer = Object.freeze({MAX_STOPS,COMPACT_WIDTH,mapFrame,validPoint,distance,inside,bounds,areaSearch,tripIds,parseTrip,shareTrip,mapsUrl,areas});
 })();

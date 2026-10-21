@@ -11,6 +11,22 @@ test('map area filtering handles the date line and world-wrapped views',()=>{
  assert(!core.inside({lat:40,lon:-112},core.bounds(10,30,-120,-100)));
  assert.equal(core.distance(merchants[0],merchants[0]),0);
 });
+test('exploring a new viewport replaces all previous location restrictions',()=>{
+ const places=[...merchants,{id:'ca-001',city:'Los Angeles',state:'CA',lat:34.05,lon:-118.25}];
+ const old={region:'AZ',city:'Phoenix',radius:5,query:'Phoenix, AZ',area:core.bounds(33,34,-113,-111),category:'coffee',payment:'lightning',verification:'merchant-confirmed',savedOnly:true,user:{lat:33.5,lon:-112.1},trip:['az-001']};
+ const area=core.bounds(33,35,-119,-117);
+ const next={...old,...core.areaSearch(old,area,places,{AZ:{name:'Arizona'},CA:{name:'California'}})};
+ assert.deepEqual([next.region,next.city,next.radius,next.query],['','',null,'']);
+ assert.equal(next.area,area);assert(!core.inside(places[0],next.area));assert(core.inside(places.at(-1),next.area));
+ for(const key of ['category','payment','verification','savedOnly','user','trip'])assert.equal(next[key],old[key]);
+ const wide=core.areaSearch(next,core.bounds(20,50,-125,-65),places);
+ assert(places.every(m=>core.inside(m,wide.area)));
+});
+test('area exploration clears city, state, and ZIP queries but retains business keywords',()=>{
+ const states={AZ:{name:'Arizona'}};
+ for(const query of ['Phoenix','Phoenix, AZ','Phoenix AZ','Arizona','AZ','85001'])assert.equal(core.areaSearch({query},null,merchants,states).query,'');
+ for(const query of ['coffee','pizza','Echo Coffee','Phoenix Coffee'])assert.equal(core.areaSearch({query},null,merchants,states).query,query);
+});
 test('shared trails contain validated unique stops and never a private origin',()=>{
  const ids=merchants.map(m=>m.id);
  assert.equal(core.tripIds([...ids,'bad',ids[0]],merchants).length,4);

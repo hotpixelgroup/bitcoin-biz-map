@@ -53,3 +53,13 @@ Tested the installed macOS Safari 27.0.1 in Responsive Design Mode at 390 × 844
 - Correction, suggestion, and payment-report forms opened in short landscape. Contents scrolled, the close control stayed reachable, the native date picker opened, and submitting an empty suggestion stopped at the required business-name field. No fabricated reports were submitted.
 - Found and fixed a focus regression: Safari pointer clicks do not focus the opening link, so native dialog focus restoration returned to the page. The submission dialog now remembers its actual triggering link and restores focus without scrolling. Verified both Escape and the close button in the local Safari build at 320 × 568.
 - Release checks: `npm run check` passed (52 tests, national-data validation, and Pages smoke check).
+
+## Map-area regression — 2026-10-20
+
+Reproduced the failure on the public map: choosing Scottsdale limited the map to 27 listings; zooming out four times and pressing Search this area still kept the Scottsdale filter and those same 27 listings.
+
+User-driven dragging, wheel zoom, zoom buttons, keyboard map movement, cluster zoom, and pinch gestures now replace prior geographic restrictions with the current viewport. Explicit Search this area uses the same policy. City/state/ZIP text searches are released when exploring elsewhere; business keywords, category, payment, evidence, saved-place selection, starting location, and trails are retained. Programmatic framing for filters, selected places, routes, and resizing does not activate exploration.
+
+Browser checks used in-app Chromium at 1280 × 720 and 390 × 844: desktop zoom expanded 27 to 329 listings; explicit area search cleared both Arizona and Scottsdale; a 5-mile nearby selection expanded from 20 to 106 listings with its radius cleared; dragging and wheel zoom refreshed the viewport results; a coffee keyword stayed active. On the phone viewport, four zoom-outs expanded 27 to 1,655 listings across the Southwest, and Search this area returned the same current-area count. No horizontal page overflow or console errors were observed. These are browser-emulation checks, not physical-device touch certification.
+
+`npm run check` passed with 54 tests, including regressions for replacing old geographic restrictions and retaining business-keyword filters. The obsolete ChatGPT-hosted Arizona prototype forwards to the maintained public map; its forwarding checks preserve old listing links while dropping arbitrary query/authentication data.

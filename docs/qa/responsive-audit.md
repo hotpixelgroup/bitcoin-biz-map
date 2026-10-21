@@ -43,3 +43,13 @@ Primary text contrast checks (sRGB): muted light text `#62695f` on `#f7f7f2`: 5.
 3. Check directory headers, expanded rows, long-name trails, both themes, and dialogs at narrow, short landscape, tablet, and desktop sizes.
 4. Resize while details and a route are open. Check keyboard collapse/Escape and restored focus.
 5. Run `npm run check`; keep `BitcoinExplorer.COMPACT_WIDTH` and the CSS media queries aligned. Review the screenshots and verify the deployed root URL after Pages finishes.
+
+## Safari follow-up — 2026-10-20
+
+Tested the installed macOS Safari 27.0.1 in Responsive Design Mode at 390 × 844, 844 × 390, and 320 × 568 (3× pixel ratio). This exercises Safari's WebKit rendering at phone dimensions; it does not reproduce an iPhone's browser chrome, software keyboard, safe areas, or physical touch input. No simulator or additional browser was installed.
+
+- Portrait map tiles, orange markers, map/list switching, search, selected details, and ZIP suggestions worked. Choosing the Scottsdale ZIP result set the approximate starting area.
+- Dark landscape kept the selected Echo Coffee marker above the scrollable detail panel. The narrow dark layout and Alabama's expanded 128-row directory fit without visible horizontal clipping.
+- Correction, suggestion, and payment-report forms opened in short landscape. Contents scrolled, the close control stayed reachable, the native date picker opened, and submitting an empty suggestion stopped at the required business-name field. No fabricated reports were submitted.
+- Found and fixed a focus regression: Safari pointer clicks do not focus the opening link, so native dialog focus restoration returned to the page. The submission dialog now remembers its actual triggering link and restores focus without scrolling. Verified both Escape and the close button in the local Safari build at 320 × 568.
+- Release checks: `npm run check` passed (52 tests, national-data validation, and Pages smoke check).

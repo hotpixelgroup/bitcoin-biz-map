@@ -31,7 +31,7 @@
   const form = query('#submission-form');
   const send = query('#submission-send');
   const status = query('#submission-status');
-  let challenge = null, challengeAt = 0, session = 0, sending = false;
+  let challenge = null, challengeAt = 0, session = 0, sending = false, returnFocus = null;
   const field = name => form.elements.namedItem(name);
   field('state').innerHTML = '<option value="">Choose a state</option>' + Object.entries(BitcoinGeo.states).sort((a,b)=>a[1].name.localeCompare(b[1].name)).map(([code,s]) => `<option value="${code}">${s.name}</option>`).join('');
   function message(value) { status.textContent = value; status.hidden = !value; }
@@ -51,7 +51,8 @@
     challenge = data.challenge; challengeAt = Date.now();
     return true;
   }
-  async function open(kind, merchant, outcome = '') {
+  async function open(kind, merchant, outcome = '', trigger = null) {
+    returnFocus = trigger || document.activeElement;
     const current = ++session;
     challenge = null; sending = false;
     form.reset(); form.hidden = false;
@@ -93,11 +94,18 @@
     if (!link) return;
     event.preventDefault();
     const merchant = merchants.find(item => item.id === link.dataset.listingId);
-    open(link.dataset.community, merchant, link.dataset.outcome);
+    open(link.dataset.community, merchant, link.dataset.outcome, link);
   });
   query('#submission-close').onclick = () => dialog.close();
   query('#submission-done').onclick = () => dialog.close();
-  dialog.addEventListener('close', () => { session++; challenge = null; });
+  dialog.addEventListener('close', () => {
+    session++; challenge = null;
+    const trigger = returnFocus;
+    returnFocus = null;
+    // Safari does not focus links on a pointer click, so the native dialog
+    // cannot reliably restore focus to the link that opened it.
+    if (trigger?.isConnected) trigger.focus({ preventScroll: true });
+  });
   dialog.addEventListener('click', event => {
     if (event.target !== dialog) return;
     const bounds = dialog.getBoundingClientRect();

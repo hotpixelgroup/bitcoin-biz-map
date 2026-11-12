@@ -28,3 +28,29 @@ for r in rows:
  assert r['category'] and r['city'], f"Missing filter metadata: {r['name']}"
  assert r['osmId'] or r.get('coordinateSource'), f"Missing coordinate source: {r['name']}"
 print(f'Validated all {len(rows)} merchants: unique listings, US state coordinates, categories, cities, and coordinate sources.')
+
+catalog=json.loads(Path('dist/merchants.json').read_text())
+assert catalog.get('schemaVersion',1) in (1,2), 'Unsupported catalog version'
+review_url=r'https://github.com/hotpixelgroup/bitcoin-biz-map/issues/[1-9]\d*'
+active={r['id'] for r in rows}
+removed=catalog.get('removals',[])
+assert len({r['id'] for r in removed})==len(removed), 'Duplicate removal decisions'
+for removal in removed:
+ assert removal['id'] not in active, 'Removed ID cannot remain active'
+ assert removal['id'] in removal['aliases'], 'Removal must retain its stable ID'
+ assert re.fullmatch(review_url,removal['reviewIssue']), 'Removal requires reviewed provenance'
+ assert removal.get('reason') and removal.get('merchant',{}).get('name'), 'Removal must explain the branch and reason'
+for r in rows:
+ for field,override in r.get('reviewedOverrides',{}).items():
+  assert field in ('name','address','city','state','category','lat','lon','website','phone','lightning','onchain','osmId','coordinateSource','verified','paymentNotes'), 'Unsupported reviewed override'
+  assert override['value']==r[field], 'Reviewed override must agree with published field'
+  assert re.fullmatch(review_url,override['reviewIssue']), 'Override requires review provenance'
+ for observation in r.get('sourceObservations',[]):
+  assert observation['datePrecision'] in ('day','month','year','unknown'), 'Invalid source date precision'
+  assert observation.get('sourceUrl','').startswith(('https://','http://')), 'Source observation requires a public source'
+ for event in r.get('evidenceEvents',[]):
+  assert event['kind']=='visitor-payment' and event['outcome'] in ('paid','failed'), 'Invalid evidence event'
+  assert event['rail'] in ('lightning','onchain','unknown') and event['datePrecision']=='day', 'Invalid event precision or rail'
+  assert date.fromisoformat(event['observedAt']).isoformat()==event['date'] and event['date']<=date.today().isoformat(), 'Invalid event date'
+  assert re.fullmatch(review_url,event['reviewIssue']), 'Event requires review provenance'
+print('Catalog v2 override, removal and evidence-event contracts passed.')

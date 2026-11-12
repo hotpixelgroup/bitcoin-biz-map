@@ -12,7 +12,7 @@ export function issuePayload(record) {
   const listing = s.listingId ? `${MAP}#${s.listingId}` : 'Not supplied';
   return {
     title: `[${s.visitOutcome ? 'Payment report: '+s.visitOutcome : correction ? 'Listing correction' : 'New business'}] ${s.name.replace(/[\r\n]/g, ' ').replace(/@/g, '＠')}`,
-    body: `Submitted by an **anonymous map visitor**. This is an unverified suggestion for maintainer review.\n\n### Business\n${quote(s.name)}\n\n### Address\n${quote(s.address)}\n\n### State\n${quote(s.state)}\n\n### Website\n${quote(s.website)}\n\n### ${correction ? 'Correction and evidence' : 'Bitcoin acceptance evidence'}\n${quote(s.evidence)}${report}\n\n### Payment method / correction type\n${quote(correction ? s.problem : s.payment)}\n\n### Additional notes\n${quote(s.notes)}\n\n### Existing map listing\n${listing}\n\nReceived: ${record.receivedAt}\n\n<!-- anonymous-submission:${record.id} -->`,
+    body: `Submitted by an **anonymous map visitor**. This is an unverified suggestion for maintainer review.\n\n### Business\n${quote(s.name)}\n\n### Address\n${quote(s.address)}\n\n### State\n${quote(s.state)}\n\n### City\n${quote(s.city)}\n\n### Category\n${quote(s.category)}\n\n### Website\n${quote(s.website)}\n\n### ${correction ? 'Correction and evidence' : 'Bitcoin acceptance evidence'}\n${quote(s.evidence)}${report}\n\n### Payment method / correction type\n${quote(correction ? s.problem : s.payment)}\n\n### Additional notes\n${quote(s.notes)}\n\n### Existing map listing\n${listing}\n\nReceived: ${record.receivedAt}\n\n<!-- anonymous-submission:${record.id} -->`,
     labels: [correction ? 'merchant-correction' : 'merchant-suggestion', 'needs-review', ...(s.visitOutcome ? ['payment-report'] : [])],
     assignees: ['hotpixelgroup'],
   };
@@ -43,6 +43,8 @@ export async function processQueue({ queueUrl, queueSecret, githubToken, catalog
     if (page >= 50) throw new Error('Issue history too large for safe deduplication');
   }
   for (const item of submissions) {
+    const current=catalog.merchants.find(m=>m.id===item.submission.listingId);
+    if(current)item.submission={...item.submission,name:current.name,address:current.address,city:current.city,state:current.state,category:current.category,website:current.website};
     const payload = issuePayload(item);
     const marker = `<!-- anonymous-submission:${item.id} -->`;
     let issue = existing.find(candidate => candidate.user?.login === 'github-actions[bot]' && candidate.body?.includes(marker));

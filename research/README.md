@@ -22,7 +22,7 @@ This is the full catalog sourced by this research, not a census of every Bitcoin
 4. Corroborate missed merchants through the regional primary records. Six Palm Valley Pediatric Dentistry offices and Live To Smile supply seven direct-source Arizona additions. Two additional Arizona businesses qualify through dated community evidence.
 5. Match OSM identity first, then business name or business-specific website, normalized exact address, and/or close coordinates. Exact address identifiers take precedence over differing approximate locator pins. Preserve matched OSM building points; they are not independently proven rooftop coordinates. Separate named businesses sharing a building remain separate records.
 6. Apply curated conflicts last. The former Rolla Steak ’n Shake is now Freddy’s, supported by Freddy’s own December 2025 announcement. Do not transfer inherited Bitcoin tags to the replacement. The East 74th Butcher Block branch, closed HIFI Donuts location and closed-booking White Raven venue are also held out where present. The statewide raw research documents other negative leads even when none matched the current feed.
-7. Preserve original IDs and human-reviewed catalog records and the `appliedReviews` ledger. Generate source-imported national IDs deterministically. Refreshes require a reviewed PR; there is no automatic daily import overwriting community work.
+7. Preserve original IDs, human-reviewed catalog records, per-field `reviewedOverrides`, source observation history, and the `appliedReviews` ledger. Apply removal tombstones and their upstream aliases before either source path; a removed branch requires explicit reviewed reactivation. Conflicting provenance remains a review candidate. Generate source-imported national IDs deterministically. Refreshes require a reviewed PR; there is no automatic daily import overwriting community work.
 
 ## Reproduce this snapshot
 
@@ -35,7 +35,7 @@ python3 scripts/national-directory.py research/snapshots/btcmap-v4-2026-10-20.js
 npm run check
 ```
 
-Run with `--geocode` only when newly researched public addresses need free US Census address-range estimates. Cached matches are in `geocoded-addresses.json`. RJ Orthodontics uses its own published JSON-LD `GeoCoordinates`; this is explicitly identified in that file. Source-generated import results should be reviewed against newer human changes before merging. Source check dates are recorded separately from acceptance dates; fetching a page today does not reset its historical announcement date.
+Use `--dry-run` first to inspect added/removed/changed IDs and conflicts without writing data. Run with `--geocode` only when newly researched public addresses need free US Census address-range estimates. Cached matches are in `geocoded-addresses.json`. RJ Orthodontics uses its own published JSON-LD `GeoCoordinates`; this is explicitly identified in that file. Source-generated import results should be reviewed against newer human changes before merging. Source check dates are recorded separately from acceptance dates; fetching a page today does not reset its historical announcement date.
 
 For a fresh upstream sync, request `https://api.btcmap.org/v4/places` with these `fields`:
 

@@ -1,7 +1,7 @@
 """Build a reviewable US snapshot. Never infer Bitcoin acceptance from Square alone.
 
 Usage: python3 scripts/national-directory.py BTCMAP_V4_JSON [--geocode]
-Raw upstream snapshot stays outside the repository; its digest is in the audit.
+The reproducible upstream snapshot is archived under research/snapshots; its digest is in the audit.
 Existing IDs, maintainer edits and applied-review ledger are preserved.
 """
 import argparse
@@ -89,13 +89,19 @@ def same_place(primary, row):
     a,b = canonical(primary.get('address')),canonical(row.get('address'))
     return norm(primary.get('city')) == norm(row.get('city')) and bool(street and row.get('address', '').startswith(street[0])) and (a.startswith(b) or b.startswith(a))
 
-def build(snapshot, geocode=False, today=None):
+def build(snapshot, geocode=False, today=None, dry_run=False):
     today = today or datetime.date.today()
     stamp = today.isoformat()
     raw = Path(snapshot).read_bytes()
     if str(snapshot).endswith('.gz'): raw = gzip.decompress(raw)
     upstream = json.loads(raw)
     catalog = json.loads((ROOT / 'dist/merchants.json').read_text())
+    previous = {m['id']: json.loads(json.dumps(m)) for m in catalog['merchants']}
+    removals = catalog.get('removals', [])
+    removed_ids = {r['listingId'] for r in catalog.get('appliedReviews', []) if r['action'] == 'remove'} | {r['id'] for r in removals}
+    removed_aliases = removed_ids | {alias for r in removals for alias in r.get('aliases', [])}
+    def removed(row):
+        return row.get('id') in removed_aliases or bool(row.get('osmId') and row['osmId'] in removed_aliases) or any(same_place(r['merchant'], row) for r in removals if r.get('merchant'))
     # Source snapshot on initial expansion; subsequent imports preserve the current catalog.
     existing = [m for m in catalog['merchants'] if m['id'].startswith('az-') or m.get('reviewIssue')]
     research = [r for p in sorted((ROOT / 'research').glob('*-primary.json')) for r in json.loads(p.read_text())]
@@ -112,6 +118,7 @@ def build(snapshot, geocode=False, today=None):
             us.append(m)
     rows = []
     for m in existing:
+        if removed(m): continue
         m.setdefault('state', 'AZ')
         m.setdefault('verification', {'type': 'article-listed', 'sourceUrl': catalog['source'], 'checkedAt': '2026-10-20', 'summary': 'Original Arizona article listing. A recent merchant payment has not been independently tested.'})
         if m['verification']['type'] == 'article-listed': m['verification'].setdefault('date','2026-10-19')
@@ -134,15 +141,22 @@ def build(snapshot, geocode=False, today=None):
         if m.get('osm_id') in by_osm:
             current = by_osm[m['osm_id']]
             # Never overwrite reviewed contact details or the acceptance provenance of a primary source.
-            if current['verification']['type'] == 'article-listed': current['verification'] = verification
+            if current['verification']['type'] == 'article-listed' and not current.get('reviewIssue'): current['verification'] = verification
             continue
         row = {'id':f"us-btc{m['id']}", 'name':m['name'], 'address':address, 'city':city, 'state':m['state'], 'category':category(m), 'lat':round(m['lat'],7), 'lon':round(m['lon'],7), 'osmId':m.get('osm_id',''), 'website':url(m.get('website')), 'phone':m.get('phone',''), 'lightning':m.get('osm:payment:lightning') == 'yes', 'onchain':m.get('osm:payment:onchain') == 'yes', 'verified':m['verified_at'], 'verification':verification}
         if not row['osmId']: row['coordinateSource'] = source
         key = (norm(row['name']), norm(row['address']))
+        if removed(row):
+            candidates.append({**row,'status':'excluded','reason':'Reviewed removal; explicit human reactivation required'})
+            continue
         if key not in seen:
             rows.append(row)
             seen.add(key)
     for r in research:
+        identity = {**r, 'id':'us-research-' + hashlib.sha256((r['name']+'|'+r['address']).encode()).hexdigest()[:12]}
+        if removed(identity):
+            candidates.append({**r,'status':'excluded','reason':'Reviewed removal; explicit human reactivation required'})
+            continue
         override = next((item for item in overrides if item.get('sourceId') and item['sourceId'] == r.get('sourceId')), None)
         if override:
             candidates.append({**r, 'status':'excluded', 'sourceUrl':override['evidenceUrl'], 'reason':override['reason']})
@@ -184,11 +198,35 @@ def build(snapshot, geocode=False, today=None):
                 match.update(lat=round(r['lat'],7),lon=round(r['lon'],7),coordinateSource=r['coordinateSource'])
         summary = r['evidenceSummary'] if not r.get('chainLocationId') else 'Current official branch plus nationwide Lightning policy. In-store or drive-through; branch checkout not tested. Venue access rules may apply.'
         if r['name'].startswith('Palm Valley'): summary = 'Practice-wide Bitcoin policy for dental and orthodontic services. Current office address checked; branch checkout and payment rail untested.'
-        match['verification'] = {'type':'merchant-confirmed', 'checkedAt':r['checkedAt'], 'sourceUrl':r.get('paymentEvidenceUrls',[r['evidenceUrl']])[0], 'summary':summary, 'date':r.get('evidenceDate') or ''}
+        incoming_verification = {'type':'merchant-confirmed', 'checkedAt':r['checkedAt'], 'sourceUrl':r.get('paymentEvidenceUrls',[r['evidenceUrl']])[0], 'summary':summary, 'date':r.get('evidenceDate') or ''}
+        if match.get('reviewIssue'):
+            if match.get('verification') != incoming_verification:
+                candidates.append({'id':match['id'],'name':match['name'],'state':match['state'],'status':'needs-review','reason':'New source conflicts with preserved reviewed provenance','verification':incoming_verification})
+        else:
+            match['verification'] = incoming_verification
+    for row in rows:
+        for field, override in row.get('reviewedOverrides', {}).items():
+            row[field] = override['value']
+        # Keep source observations separate from visitor payment reports. Dates
+        # retain their original precision; a new import is not a new purchase.
+        prior = previous.get(row['id'], {})
+        history = list(prior.get('sourceObservations', []))
+        for evidence in [prior.get('verification'), row.get('verification')]:
+            if not evidence: continue
+            observed = evidence.get('date', '')
+            observation = {**evidence, 'datePrecision': 'day' if re.fullmatch(r'\d{4}-\d{2}-\d{2}', observed) else 'month' if re.fullmatch(r'\d{4}-\d{2}', observed) else 'year' if re.fullmatch(r'\d{4}', observed) else 'unknown'}
+            if observation not in history: history.append(observation)
+        if history: row['sourceObservations'] = history
+    rows = [row for row in rows if not removed(row)]
     # Keep a stable sort and all historic IDs/reviews. The UI and CSV derive counts live.
     rows.sort(key=lambda m:(m['state'], m['name'].casefold(), m['address']))
     catalog['merchants'] = rows
     catalog['nationalResearch'] = {'checkedAt':stamp,'upstream':'https://api.btcmap.org/v4/places','sha256':hashlib.sha256(raw).hexdigest(),'communityRecencyDays':365,'scope':'50 states and Washington, DC. Sourced directory, not an exhaustive census of businesses.'}
+    catalog['schemaVersion'] = 2
+    changes = {'added':[r['id'] for r in rows if r['id'] not in previous], 'removed':[key for key in previous if not any(r['id']==key for r in rows)], 'changed':[r['id'] for r in rows if r['id'] in previous and previous[r['id']] != r], 'conflicts':sum(r.get('status')=='needs-review' for r in candidates)}
+    if dry_run:
+        print(json.dumps(changes, indent=2))
+        return catalog
     (ROOT/'dist/merchants.json').write_text(json.dumps(catalog,ensure_ascii=False,indent=2)+'\n')
     cache_path.write_text(json.dumps(cache,ensure_ascii=False,indent=2)+'\n')
     (ROOT/'dist/research-candidates.json').write_text(json.dumps({'checkedAt':stamp,'description':'Unverified, stale, incomplete or excluded leads. These are not new verified map listings.','candidates':candidates},ensure_ascii=False,indent=2)+'\n')
@@ -200,6 +238,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('snapshot')
     parser.add_argument('--geocode',action='store_true')
+    parser.add_argument('--dry-run',action='store_true',help='Print a candidate diff without writing catalog or research files')
     parser.add_argument('--as-of',type=datetime.date.fromisoformat,help='Use the original snapshot date for reproducible research builds')
     args = parser.parse_args()
-    build(args.snapshot,args.geocode,args.as_of)
+    build(args.snapshot,args.geocode,args.as_of,args.dry_run)

@@ -53,3 +53,14 @@ test('D1 budget uses one atomic query and stops at the configured cap', async ()
     assert.equal(await f.store.consume('daily/tomorrow', 50), true);
   } finally { f.sqlite.close(); }
 });
+test('receipt status updates preserve the original retention clock', async () => {
+  const f=fixture();
+  try {
+    await f.store.write('receipt/one',{state:'received'});
+    f.tick(1000);
+    await f.store.write('receipt/one',{state:'published'});
+    assert.equal((await f.store.read('receipt/one')).state,'published');
+    await f.store.prune('receipt/',500);
+    assert.equal(await f.store.read('receipt/one'),null);
+  } finally {f.sqlite.close();}
+});

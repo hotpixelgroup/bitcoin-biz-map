@@ -1,7 +1,7 @@
 name: Publish approved map submissions
 on:
   issues:
-    types: [opened, labeled]
+    types: [opened, labeled, closed, reopened]
   workflow_dispatch:
     inputs:
       issue_number:
@@ -66,3 +66,26 @@ jobs:
         env:
           REVIEW_MODE: publish
           GH_TOKEN: ${{ github.token }}
+          SUBMISSION_QUEUE_URL: ${{ secrets.SUBMISSION_QUEUE_URL }}
+          SUBMISSION_QUEUE_SECRET: ${{ secrets.SUBMISSION_QUEUE_SECRET }}
+
+  receipt-status:
+    if: github.event_name == 'issues' && (github.event.action == 'closed' || github.event.action == 'reopened' || github.event.action == 'labeled')
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    permissions:
+      contents: read
+      issues: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24.22.1'
+      - run: node scripts/receipt-status.mjs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SUBMISSION_QUEUE_URL: ${{ secrets.SUBMISSION_QUEUE_URL }}
+          SUBMISSION_QUEUE_SECRET: ${{ secrets.SUBMISSION_QUEUE_SECRET }}

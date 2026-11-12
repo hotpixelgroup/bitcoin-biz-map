@@ -1,0 +1,7 @@
+'use strict';
+(()=>{
+ const status=document.querySelector('#receipt-status'),link=document.querySelector('#receipt-issue'),button=document.querySelector('#receipt-refresh');
+ const token=location.hash.slice(1),labels={received:'Received · waiting for processing','awaiting-review':'Awaiting human review',published:'Published to the map','not-added':'Reviewed · not added',delayed:'Review is delayed'};
+ async function refresh(){button.disabled=true;link.hidden=true;try{if(!/^[a-f0-9]{64}$/.test(token))throw Error('This receipt link is incomplete.');const endpoint=new URL(BitcoinCommunityConfig.endpoint);endpoint.pathname='/api/status';endpoint.searchParams.set('token',token);const response=await fetch(endpoint,{credentials:'omit',signal:AbortSignal.timeout(12000)}),data=await response.json();if(!response.ok)throw Error(data.error||'Status is unavailable. Please retry.');status.textContent=labels[data.state]||'Awaiting review';document.querySelector('#receipt-dates').textContent=`Received ${new Date(data.receivedAt).toLocaleDateString()}${data.deployedAt?' · published '+new Date(data.deployedAt).toLocaleDateString():''}`;if(/^https:\/\/github\.com\/hotpixelgroup\/bitcoin-biz-map\/issues\/[1-9]\d*$/.test(data.issueUrl||'')){link.href=data.issueUrl;link.hidden=false;}}catch(error){status.textContent=error.message;}finally{setTimeout(()=>button.disabled=false,5000);}}
+ button.onclick=refresh;refresh();
+})();

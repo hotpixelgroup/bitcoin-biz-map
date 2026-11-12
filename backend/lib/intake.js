@@ -23,13 +23,16 @@ export function validatePaymentReport(value, { today = new Date().toISOString().
 }
 export function validateSubmission(data) {
   if (!data || typeof data !== 'object' || Array.isArray(data)) throw new InputError('Please complete the form.');
-  if (!['suggestion', 'correction'].includes(data.kind)) throw new InputError('Choose a submission type.');
+  if (!['suggestion', 'correction', 'payment'].includes(data.kind)) throw new InputError('Choose a submission type.');
   if (data.consent !== true) throw new InputError('Please confirm that your submission can be shared publicly.');
   const result = {
-    kind: data.kind,
+    kind: data.kind==='payment'?'correction':data.kind,
+    submissionType: data.kind==='payment'?'payment':data.submissionType==='payment'?'payment':data.kind,
     name: text(data.name, 'Business name', 120, true),
     state: text(data.state, 'State', 2),
     address: text(data.address, 'Business address', 300, true),
+    city: text(data.city, 'City', 100),
+    category: text(data.category, 'Category', 100),
     website: text(data.website, 'Website', 500),
     evidence: text(data.evidence, 'Payment evidence or correction', 2000, true),
     notes: text(data.notes, 'Additional notes', 1000),
@@ -41,6 +44,7 @@ export function validateSubmission(data) {
     visitRail: text(data.visitRail, 'Payment network', 12),
     paymentConditions: text(data.paymentConditions, 'Payment conditions', 500),
   };
+  if (result.submissionType==='payment'&&!result.visitOutcome) throw new InputError('Choose a payment outcome.');
   if (result.visitOutcome) {
     if (result.kind !== 'correction' || !result.listingId) throw new InputError('Choose the business you visited.');
     validatePaymentReport({outcome:result.visitOutcome,date:result.visitDate,rail:result.visitRail});
@@ -107,14 +111,22 @@ export function createIntake({ store, secret, now = Date.now, origin = ORIGIN, r
       if (!verifyChallenge(data.challenge, request)) throw new InputError('Your form has expired or was submitted too quickly. Please reopen it and try again.');
       const submission = validateSubmission(data);
       const date = new Date(now()).toISOString();
-      const id = hash(`${date.slice(0, 10)}:${JSON.stringify(submission)}`);
+      // Preserve daily deduplication across the additive v2 envelope migration.
+      const legacy = {...submission};
+      for (const field of ['submissionType','city','category']) delete legacy[field];
+      const legacyId = hash(`${date.slice(0, 10)}:${JSON.stringify(legacy)}`);
+      let id = hash(`${date.slice(0, 10)}:${JSON.stringify(submission)}`);
+      if (await store.read(`processed/${legacyId}.json`) || await store.read(`pending/${legacyId}.json`)) id = legacyId;
       const published = await store.read(`processed/${id}.json`);
-      if (published) return json(request, { receipt: id, state: 'published', issueUrl: published.issueUrl });
-      if (await store.read(`pending/${id}.json`)) return json(request, { receipt: id, state: 'queued' }, 202);
+      if (published) return json(request, { receipt: id, statusToken:published.statusToken, state: 'awaiting-review', issueUrl: published.issueUrl });
+      const pending=await store.read(`pending/${id}.json`);
+      if(pending){if(pending.statusToken)await store.claim(`receipt/${pending.statusToken}.json`,{state:'received',receivedAt:pending.receivedAt});return json(request,{receipt:id,statusToken:pending.statusToken,state:'queued'},202);}
       if (!(await budget(`rate/${date.slice(0, 13)}/${ipKey(request)}`, 3))) throw new InputError('Too many submissions. Please try again in an hour.', 429);
       if (!(await budget(`daily/${date.slice(0, 10)}`, 50))) throw new InputError('The review queue has reached today’s limit. Please try again tomorrow.', 429);
-      await store.claim(`pending/${id}.json`, { id, receivedAt: date, submission });
-      return json(request, { receipt: id, state: 'queued' }, 202);
+      await store.claim(`pending/${id}.json`, { id, receivedAt: date, submission, statusToken:randomBytes(32).toString('hex') });
+      const record=await store.read(`pending/${id}.json`);
+      await store.claim(`receipt/${record.statusToken}.json`,{state:'received',receivedAt:record.receivedAt});
+      return json(request, { receipt: id, statusToken:record.statusToken, state: 'queued' }, 202);
     } catch (error) {
       if (error instanceof InputError) return json(request, { error: error.message }, error.status);
       log('Anonymous intake storage failure');
@@ -127,7 +139,7 @@ export function createIntake({ store, secret, now = Date.now, origin = ORIGIN, r
     try {
       if (request.method === 'GET') {
         if (new Date(now()).getUTCHours() === 0 && store.prune) {
-          await Promise.all([store.prune('rate/', now() - 172800000), store.prune('daily/', now() - 172800000), store.prune('processed/', now() - 2592000000)]);
+          await Promise.all([store.prune('rate/', now() - 172800000), store.prune('daily/', now() - 172800000), store.prune('processed/', now() - 2592000000), store.prune('receipt/', now() - 2592000000), store.prune('status-rate/',now()-172800000)]);
         }
         const entries = await store.list('pending/', 20);
         const items = (await Promise.all(entries.map(entry => store.read(entry.pathname)))).filter(Boolean);
@@ -137,8 +149,18 @@ export function createIntake({ store, secret, now = Date.now, origin = ORIGIN, r
         const data = await readBody(request);
         if (!/^[a-f0-9]{64}$/.test(data.id || '') || !Number.isSafeInteger(data.issueNumber) || data.issueNumber <= 0) throw new InputError('Invalid acknowledgment.');
         const issueUrl = `https://github.com/${REPO}/issues/${data.issueNumber}`;
-        await store.claim(`processed/${data.id}.json`, { issueUrl, createdAt: new Date(now()).toISOString() });
-        await store.remove(`pending/${data.id}.json`);
+        const pending=await store.read(`pending/${data.id}.json`),processed=await store.read(`processed/${data.id}.json`);
+        if(data.state){
+          if(!['published','not-added','delayed','awaiting-review'].includes(data.state)||!processed||processed.issueUrl!==issueUrl)throw new InputError('Invalid receipt transition.');
+          if(data.state==='published' && (!/^https:\/\/github\.com\/hotpixelgroup\/bitcoin-biz-map\/actions\/runs\/[0-9]+$/.test(data.deploymentUrl||'') || !Number.isFinite(Date.parse(data.deployedAt))))throw new InputError('Deployment confirmation is required.');
+          if(processed.statusToken){const path=`receipt/${processed.statusToken}.json`,receipt=await store.read(path);if(receipt){if(receipt.state==='published'&&data.state!=='published')return json(request,{acknowledged:true});await store.write(path,{...receipt,state:data.state,reviewedAt:new Date(now()).toISOString(),...(data.state==='published'?{deployedAt:data.deployedAt,deploymentUrl:data.deploymentUrl}:{})});}}
+        }else{
+          if(!pending&&!processed)throw new InputError('Unknown queued submission.');
+          await store.claim(`processed/${data.id}.json`, { issueUrl, statusToken:pending?.statusToken, receivedAt:pending?.receivedAt, createdAt: new Date(now()).toISOString() });
+          const record=await store.read(`processed/${data.id}.json`);
+          if(record.statusToken){const path=`receipt/${record.statusToken}.json`,receipt=await store.read(path);await store.write(path,{state:'awaiting-review',receivedAt:record.receivedAt,...receipt,issueUrl,issueCreatedAt:record.createdAt,...(receipt?.state==='received'?{state:'awaiting-review'}:{})});}
+          await store.remove(`pending/${data.id}.json`);
+        }
         return json(request, { acknowledged: true });
       }
       return json(request, { error: 'Method not allowed.' }, 405);
@@ -148,5 +170,19 @@ export function createIntake({ store, secret, now = Date.now, origin = ORIGIN, r
       return json(request, { error: 'Queue operation failed.' }, 503);
     }
   }
-  return { publicHandler, queueHandler };
+  async function statusHandler(request){
+    if(request.headers.get('origin')!==origin)return json(request,{error:'Use the map to check a receipt.'},403);
+    if(request.method==='OPTIONS')return json(request,{});
+    if(request.method!=='GET')return json(request,{error:'Method not allowed.'},405);
+    if(!configured())return json(request,{error:'Status temporarily unavailable.'},503);
+    const token=new URL(request.url).searchParams.get('token');
+    if(!/^[a-f0-9]{64}$/.test(token||''))return json(request,{error:'Receipt not found or expired.'},404);
+    try{
+      if(!await budget(`status-rate/${new Date(now()).toISOString().slice(0,13)}/${ipKey(request)}`,120))return json(request,{error:'Please wait before checking again.'},429);
+      const receipt=await store.read(`receipt/${token}.json`);
+      if(!receipt||now()-Date.parse(receipt.receivedAt)>2592000000)return json(request,{error:'Receipt not found or expired. Receipts are available for 30 days.'},404);
+      return json(request,{...receipt,...(['received','awaiting-review'].includes(receipt.state)&&now()-Date.parse(receipt.receivedAt)>604800000?{state:'delayed'}:{})});
+    }catch{return json(request,{error:'Status temporarily unavailable. Please retry.'},503);}
+  }
+  return { publicHandler, queueHandler, statusHandler };
 }

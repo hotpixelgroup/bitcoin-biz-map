@@ -2,7 +2,7 @@
 
 The map stays on **GitHub Pages**. Anonymous forms send business details to a **Cloudflare Worker on the Workers Free plan**, backed by a **D1 database on that same free account**. A standard **GitHub Actions** workflow in this public repository polls the private queue and creates review issues with a short-lived repository token. No personal GitHub token is given to the backend.
 
-**Status:** deployed to the owner's existing account, verified as **Workers Free** in the Cloudflare dashboard on October 20, 2026. The public endpoint is `https://bitcoin-biz-map-intake.harry-4e8.workers.dev/api/submissions`; the private D1 binding and GitHub Actions secrets are configured. A live anonymous test created [review issue #7](https://github.com/hotpixelgroup/bitcoin-biz-map/issues/7), with the intended bot author, labels, assignee, and durable acknowledgment. No paid plan, paid add-on, or billing upgrade was enabled.
+**Status:** deployed to the owner's existing account, verified as **Workers Free** in the Cloudflare dashboard on October 20 and November 11, 2026. The public endpoint is `https://bitcoin-biz-map-intake.harry-4e8.workers.dev/api/submissions`; the private D1 binding and GitHub Actions secrets are configured. A live anonymous test created [review issue #7](https://github.com/hotpixelgroup/bitcoin-biz-map/issues/7), with the intended bot author, labels, assignee, and durable acknowledgment. No paid plan, paid add-on, or billing upgrade was enabled.
 
 ## Free-only policy
 
@@ -54,4 +54,12 @@ Review the issue’s generated **Map update** section, edit the desired listing 
 
 ## Visitor payment reports
 
-The existing free intake accepts payment feedback as a listing correction with `visitOutcome`, `visitDate`, `visitRail`, and optional `paymentConditions`. Inputs use the same consent, origin, signed challenge, durable queue, and quotas as other submissions. Dates and networks are validated in the Worker and again before publishing. No new storage, service, or paid plan is required. Create the GitHub `payment-report` label before deploying the processor. The `approved` label and protected data-only PR flow remain the only publication path.
+The existing free intake accepts the short `payment` envelope and legacy listing-correction envelope, normalizing payment feedback as a listing correction with `visitOutcome`, `visitDate`, `visitRail`, and optional `paymentConditions`. Inputs use the same consent, origin, signed challenge, durable queue, and quotas as other submissions. Dates and networks are validated in the Worker and again before publishing. No new storage, service, or paid plan is required. Create the GitHub `payment-report` label before deploying the processor. The `approved` label and protected data-only PR flow remain the only publication path.
+
+## Receipt status (additive v2)
+
+`GET /api/status?token=…` accepts only the map origin. Receipt tokens are 32 random bytes, distinct from the content deduplication hash. Responses contain only state, lifecycle dates, the public issue URL and confirmed deployment URL; no submission text, contact data or IP hash. The status page uses a URL fragment, no-referrer policy, explicit refresh and a five-second UI cooldown. The server caps reads at 120 per client-hour and expires receipts after 30 days, independently of updates.
+
+The existing private `/api/queue` acknowledgment accepts authenticated status transitions. Issue creation means awaiting review. Only the publication workflow's successful Pages result sets published; closure, blocked work and age have separate states. D1 uses the existing table; no schema migration or additional cloud product is required. Pending pre-v2 entries keep their original content identity and remain processable; they do not retroactively gain a receipt link. Repeated v1 submissions remain deduplicated during rollout.
+
+For this additive release, validate and deploy the reviewed Worker before enabling the new frontend receipt links. Existing clients and pending records remain supported. On rollback, prefer reverting frontend code while retaining the additive Worker API and stored receipts. Do not delete or recreate the database.

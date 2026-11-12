@@ -7185,7 +7185,18 @@
         "checkedAt": "2026-10-20",
         "sourceUrl": "https://btcmap.org/merchant/node:1560663801",
         "summary": "BTC Map / OpenStreetMap reports Bitcoin acceptance. Community dated, not a merchant checkout test."
-      }
+      },
+      "reviewedOverrides": {
+        "phone": {
+          "value": "+1-480-422-4081",
+          "reviewIssue": "https://github.com/hotpixelgroup/bitcoin-biz-map/issues/10",
+          "reviewedAt": "2026-10-20T22:39:32.656Z"
+        }
+      },
+      "sourceAliases": [
+        "az-008",
+        "node:1560663801"
+      ]
     },
     {
       "id": "az-188",
@@ -217653,5 +217664,7 @@
     "sha256": "f202e7ace77bb61b8f724c46eeef576dae3718124cef9dfbcbb456d755c03a73",
     "communityRecencyDays": 365,
     "scope": "50 states and Washington, DC. Sourced directory, not an exhaustive census of businesses."
-  }
+  },
+  "schemaVersion": 2,
+  "removals": []
 }

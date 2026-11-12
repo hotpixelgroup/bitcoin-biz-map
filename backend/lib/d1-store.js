@@ -7,6 +7,9 @@ export function createD1Store(db, now = Date.now) {
       const value = await db.prepare('SELECT value FROM intake_records WHERE pathname = ?').bind(path).first('value');
       return value === null ? null : JSON.parse(value);
     },
+    async write(path, data) {
+      await db.prepare('INSERT INTO intake_records (pathname, value, created_at) VALUES (?, ?, ?) ON CONFLICT(pathname) DO UPDATE SET value = excluded.value').bind(path, JSON.stringify(data), now()).run();
+    },
     async claim(path, data) {
       const result = await db.prepare('INSERT OR IGNORE INTO intake_records (pathname, value, created_at) VALUES (?, ?, ?)').bind(path, JSON.stringify(data), now()).run();
       return result.meta.changes === 1;

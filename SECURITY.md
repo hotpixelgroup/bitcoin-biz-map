@@ -6,10 +6,9 @@ or personal data in public issues. General bugs and public merchant-data
 corrections can be submitted as issues.
 
 The current `main` branch is supported. The public map has no accounts or payments. The optional anonymous intake service stores business submissions privately in D1 before publishing them as review issues. Its shared queue secret stays in Workers secrets and GitHub Actions secrets, never in browser files. It uses browser-local
-storage for saved places and requests geolocation only after a visitor asks.
+storage for saved places and trails. It requests a new geolocation permission only after a visitor asks; an already-granted permission may supply nearby results automatically. Exact origins remain in memory. Explicit offline saving stores only public directory information, never location or form drafts.
 Requested routes send coordinates to OSRM, while navigation opens Google Maps.
 Map tiles and fonts load from their external providers.
 
-GitHub Actions use read-only permissions by default. Only the deployment job
-receives Pages write and OIDC permissions. Actions are pinned to commit SHAs
+GitHub Actions use read-only permissions by default. Only the deployment job receives Pages write and OIDC permissions. Human-approved catalog publication has separately scoped repository/issue permissions; the authenticated receipt callback reports deployment without exposing private queued data. Receipt tokens are random, unguessable, retained for 30 days, and carried in a no-referrer status-page fragment. Status reads are rate limited. Actions are pinned to commit SHAs
 and monitored by Dependabot. Deployment never runs from pull requests.

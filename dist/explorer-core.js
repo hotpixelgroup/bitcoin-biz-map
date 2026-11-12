@@ -40,12 +40,12 @@
     const url = new URL(base); url.search=''; url.hash='trip='+tripIds(ids,merchants).join(',');
     return url.href;
   }
-  function mapsUrl(stops, origin) {
+  function mapsUrl(stops, origin, mode='driving') {
     if (!stops.length || stops.length > MAX_STOPS || !stops.every(validPoint) || (origin && !validPoint(origin))) throw Error('Choose up to four valid stops.');
     const make = coordinates => {
       const point = p => coordinates || !p.address ? `${p.lat},${p.lon}` : p.address;
       const url = new URL('https://www.google.com/maps/dir/');
-      url.search = new URLSearchParams({api:'1',travelmode:'driving',destination:point(stops.at(-1))});
+      url.search = new URLSearchParams({api:'1',travelmode:mode==='walking'?'walking':'driving',destination:point(stops.at(-1))});
       if (origin) url.searchParams.set('origin',point(origin));
       else if (stops.length>1) url.searchParams.set('origin',point(stops[0]));
       const middle = origin ? stops.slice(0,-1) : stops.slice(1,-1);

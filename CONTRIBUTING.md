@@ -10,7 +10,7 @@ include customer information, wallet details, or private location history.
    and dark themes and a narrow/mobile layout for visual changes.
 4. Submit a pull request to `main` with the change and validation details.
 
-There is no build step or dependency installation. When changing `app.js`, `community.js`, or `styles.css`, update their `?v=` cache version in `dist/index.html` so returning visitors receive matching assets. Vendored libraries retain
+The dependency-free `npm run package` step generates `.publish/` from editable `dist/` source; no frontend packages are needed. Do not commit generated output. When changing `app.js`, `community.js`, or `styles.css`, update their `?v=` cache version in `dist/index.html` so returning visitors receive matching assets. Vendored libraries retain
 their licenses. Update their versions and notices together. Merchant coordinates
 must come from a documented source, and database changes retain ODbL attribution.
 
@@ -47,10 +47,20 @@ The workflows use short-lived `GITHUB_TOKEN` permissions, standard free runners,
 
 Approved operations are recorded in `dist/merchants.json` under `appliedReviews`. Preserve that history: it makes retries safe. The original-source importer refuses to overwrite a directory with community reviews. Reconcile future article/BTC Map refreshes in a separate file and a reviewed PR.
 
-National directory pages and CSV downloads read the same `dist/merchants.json`, so an approved update appears everywhere without regenerating exports. National IDs are supported alongside all original Arizona links. For nationwide source refreshes, use `scripts/national-directory.py` and the documented research process; do not replace the applied-review ledger.
+Packaging generates the discovery index, details, merchant/city pages and sitemap from the same `dist/merchants.json`. CSV downloads read the matching full catalog. Deployment rebuilds them together, so no second dataset needs manual editing. National IDs are supported alongside all original Arizona links. For nationwide source refreshes, use `scripts/national-directory.py` and the documented research process; do not replace the applied-review ledger.
 
 ### Review visitor payment reports
 
 The two payment feedback buttons create anonymous issues with **payment-report**, **merchant-correction**, and **needs-review**. The prepared JSON contains `paymentReport` with an outcome (`paid` or `failed`), a visit date, and a rail (`lightning`, `onchain`, or `unknown`). Verify or edit the claim, date, and optional `merchant.paymentNotes`, then add **approved** as usual. Dates must be real and not in the future. A report can update the payment history even when no address or contact field changes.
 
-Approval records a reviewed visitor claim, not a maintainer test purchase. `lastPayment` preserves the most recent successful payment; `latestPaymentReport` records the latest success or difficulty, with an issue link for provenance. A failure does not automatically switch off Lightning/on-chain or delete a listing. Edit those fields or choose removal only when the evidence supports it. Earlier reports cannot replace newer dates. Reports awaiting review never appear as payment confirmations on the public map. History and conditions appear in the directory and CSV exports as well.
+Approval records a reviewed visitor claim, not a maintainer test purchase. `lastPayment` preserves the most recent successful payment; `latestPaymentReport` records the latest success or difficulty, with an issue link for provenance. A failure does not automatically switch off Lightning/on-chain or delete a listing. Edit those fields or choose removal only when the evidence supports it. Earlier reports cannot replace newer dates; a same-day failure retains caution precedence. Append-only `evidenceEvents` retain the reviewed visit history. Metadata edits preserve prior acceptance provenance and record only changed fields in `reviewedOverrides`. Reports awaiting review never appear as payment confirmations on the public map. History and conditions appear in the directory and CSV exports as well.
+
+## Preservation and review operations
+
+`removals` retains the branch snapshot, stable ID, upstream aliases, reason and review source. Both old `appliedReviews` removals and new tombstones suppress re-imports. Reactivation requires an explicit reviewed catalog PR that removes the corresponding tombstone/legacy removal entry and explains the new evidence; do not silently reuse a removed branch identity. Source refreshes keep reviewed records and overrides, append `sourceObservations` with original date precision, and flag conflicting evidence for review. Start with `--dry-run`.
+
+The issue includes a readable change summary before its advanced JSON. A new city must be supplied explicitly or be supported by the uniquely matched Census address; a street fragment is never treated as the city. Confirm the category rather than accepting an uncertain guess.
+
+**Directory freshness review** runs Monday and Thursday and emits a read-only report/artifact: aged evidence, reviewed overrides/removals and pending issue age. `hotpixelgroup` remains the current maintainer. A backup has not been nominated. Triage payment failures/closures first, then old suggestions. Seven days is an internal planning target, not a public response promise; review capacity must be established by the owner.
+
+Anonymous receipts move from received to awaiting review when their issue exists. Only a successful Pages callback marks published. Maintainer closure without publication shows not added; blocked or old work shows delayed. Retry the approval workflow after a deployment or receipt-delivery failure; it resumes without merging the same change twice. The shared queue secret stays scoped to the existing Worker and Actions.

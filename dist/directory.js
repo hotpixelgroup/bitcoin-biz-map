@@ -1,34 +1,27 @@
 'use strict';
 (() => {
-  const $ = selector => document.querySelector(selector);
-  const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const url = value => { try { const u = new URL(value); return ['http:','https:'].includes(u.protocol) && !u.username ? u.href : ''; } catch { return ''; } };
-  const states = Object.entries(BitcoinGeo.states).sort((a,b) => a[1].name.localeCompare(b[1].name));
-  let merchants = [], query = '', evidence = '';
-  function selected(code) { return merchants.filter(m => m.state === code && (!evidence || m.verification?.type === evidence) && (!query || `${m.name} ${m.address} ${m.city}`.toLowerCase().includes(query))); }
-  function render() {
-    $('#state-index').innerHTML = states.map(([code,state]) => `<a href="#state-${code}">${esc(state.name)} <span>${selected(code).length}</span></a>`).join('');
-    $('#state-directory').innerHTML = states.map(([code,state]) => {
-      const rows = selected(code);
-      return `<section class="state-section" id="state-${code}"><div class="state-heading"><div><span class="eyebrow">${code}</span><h2>${esc(state.name)} <span>${rows.length}</span></h2></div><div><a href="./?state=${code}">View map ↗</a><button data-download="${code}" ${rows.length?'':'disabled'}>CSV ↓</button></div></div>${rows.length ? `<details><summary>Browse ${rows.length.toLocaleString()} sourced listing${rows.length===1?'':'s'}</summary><div data-state-rows="${code}"></div></details>` : '<p class="coverage-note">No records match this selection. This is a coverage gap, not evidence that no businesses accept Bitcoin here.</p>'}</section>`;
-    }).join('');
-    // Populate a state's rows only when opened, keeping the national page fast.
-    document.querySelectorAll('.state-section details').forEach(details => details.addEventListener('toggle', () => {
-      const target = details.querySelector('[data-state-rows]');
-      if (!details.open || target.children.length) return;
-      target.innerHTML = selected(target.dataset.stateRows).sort((a,b)=>a.name.localeCompare(b.name)||a.address.localeCompare(b.address)).map(m => `<article class="directory-row"><div><a class="directory-name" href="./#${esc(m.id)}">${esc(m.name)} ↗</a><p>${esc(m.address)}</p><span>${esc(m.category)}${m.lightning?' · Lightning reported':''}${m.onchain?' · On-chain reported':''}</span>${m.lastPayment?`<p>Reviewed visitor payment: ${esc(m.lastPayment.date)} · ${esc(m.lastPayment.rail)}</p>`:''}${m.latestPaymentReport?.outcome==='failed'?`<p>Reviewed payment difficulty: ${esc(m.latestPaymentReport.date)}</p>`:''}${m.paymentNotes?`<p>${esc(m.paymentNotes)}</p>`:''}</div><div class="directory-evidence"><a href="${esc(url(BitcoinDirectory.source(m)))}" target="_blank" rel="noopener">${esc(BitcoinDirectory.evidence(m))} ↗</a><span>${esc(BitcoinDirectory.dateLabel(m))}</span>${m.verification?.summary?`<details><summary>Evidence notes</summary><p>${esc(m.verification.summary)}</p></details>`:''}</div></article>`).join('');
-    }));
-  }
-  $('#directory-theme').onclick = () => { const theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'; document.documentElement.dataset.theme = theme; try { localStorage.setItem('sun-theme',theme); } catch {} };
-  let searchTimer;
-  $('#directory-search').oninput = event => { query = event.target.value.trim().toLowerCase(); clearTimeout(searchTimer); searchTimer = setTimeout(render,180); };
-  $('#directory-evidence').onchange = event => { evidence = event.target.value; render(); };
-  $('#download-all').onclick = () => BitcoinDirectory.download(merchants,'sats-in-the-sun-us-directory.csv');
-  $('#state-directory').onclick = event => { const button = event.target.closest('[data-download]'); if (button) BitcoinDirectory.download(selected(button.dataset.download),`sats-in-the-sun-${button.dataset.download.toLowerCase()}.csv`); };
-  fetch('merchants.json').then(response => { if (!response.ok) throw Error(); return response.json(); }).then(data => {
-    merchants = data.merchants;
-    $('#directory-summary').textContent = `${merchants.length.toLocaleString()} mapped locations · 50 states + DC · Research snapshot ${data.nationalResearch?.checkedAt || '2026-10-20'}. Approved community changes appear here automatically.`;
-    $('#download-all').disabled = false; render();
-    if (/^#state-[A-Z]{2}$/.test(location.hash)) document.querySelector(location.hash)?.scrollIntoView();
-  }).catch(() => { $('#directory-summary').textContent = 'The directory could not load. Please check your connection and refresh.'; });
+ const $=selector=>document.querySelector(selector),esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const safe=value=>{try{const u=new URL(value);return /^https?:$/.test(u.protocol)&&!u.username?u.href:'';}catch{return '';}};
+ const states=Object.entries(BitcoinGeo.states).sort((a,b)=>a[1].name.localeCompare(b[1].name));
+ let merchants=[],query='',evidence='',renderVersion=0;
+ const selected=code=>BitcoinDiscovery.query(merchants,{...BitcoinDiscovery.defaults,region:code,query,verification:evidence});
+ function render(){
+  const version=++renderVersion,active=Boolean(query||evidence),groups=states.map(([code,state])=>({code,state,rows:selected(code)})),visible=groups.filter(g=>!active||g.rows.length||$('#show-empty-states').checked),total=groups.reduce((n,g)=>n+g.rows.length,0);
+  $('#directory-matches').textContent=`${total.toLocaleString()} matching businesses in ${groups.filter(g=>g.rows.length).length} ${groups.filter(g=>g.rows.length).length===1?'state / DC':'states / DC'}`;
+  $('#state-index').innerHTML=visible.map(({code,state,rows})=>`<a href="#state-${code}">${esc(state.name)} <span>${rows.length}</span></a>`).join('');
+  $('#state-directory').innerHTML=visible.length?visible.map(({code,state,rows})=>`<section class="state-section" id="state-${code}"><div class="state-heading"><div><span class="eyebrow">${code}</span><h2>${esc(state.name)} <span>${rows.length}</span></h2></div><div><a href="${esc(BitcoinDiscovery.url({...BitcoinDiscovery.defaults,region:code,verification:evidence},new URL('./',location.href)))}">View map ↗</a><button data-download="${code}" ${rows.length?'':'disabled'}>CSV ↓</button></div></div>${rows.length?`<details><summary>Browse ${rows.length} sourced listings</summary><div data-state-rows="${code}"></div></details>`:`<p class="coverage-note">${active?'No matches for these filters. Change your search to see other listings.':'No sourced records in this state yet. This is a coverage gap, not proof that no businesses accept Bitcoin here.'}</p>`}</section>`).join(''):'<div class="directory-empty"><h2>No matches yet.</h2><p>Try a nearby city, a category such as coffee, or fewer filters.</p><button id="directory-reset">Reset search</button></div>';
+  document.querySelectorAll('.state-section > details').forEach(details=>details.addEventListener('toggle',async()=>{
+   if(!details.open)return;const target=details.querySelector('[data-state-rows]');if(target.dataset.loaded||target.dataset.loading)return;
+   target.dataset.loading='true';target.textContent='Loading payment evidence…';
+   try{const rows=await Promise.all(selected(target.dataset.stateRows).map(m=>BitcoinCatalog.detail(m.id)));if(version!==renderVersion)return;target.innerHTML=rows.map(m=>{const c=BitcoinDirectory.summary(m);return `<article class="directory-row"><div><a class="directory-name" href="./places/${esc(m.id)}/">${esc(m.name)} ↗</a><p>${esc(m.address)}</p><span>${esc(m.category)}${m.lightning?' · Lightning reported':''}${m.onchain?' · On-chain reported':''}</span>${m.paymentNotes?`<p>${esc(m.paymentNotes)}</p>`:''}</div><div class="directory-evidence"><strong class="confidence-${c.tone}">${esc(c.label)}</strong><span>${esc(c.detail)}</span><a href="${esc(safe(BitcoinDirectory.source(m)))}" target="_blank" rel="noopener">Read source ↗</a></div></article>`;}).join('');target.dataset.loaded='true';}catch{target.innerHTML='<p>Details could not load. Close and reopen this section to retry.</p>';}finally{delete target.dataset.loading;}
+  }));
+  $('#directory-reset')?.addEventListener('click',()=>{query='';evidence='';$('#directory-search').value='';$('#directory-evidence').value='';render();$('#directory-search').focus();});
+ }
+ $('#directory-theme').onclick=()=>{const theme=document.documentElement.dataset.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=theme;try{localStorage.setItem('sun-theme',theme);}catch{}};
+ let timer;$('#directory-search').oninput=e=>{query=e.target.value;clearTimeout(timer);timer=setTimeout(render,180);};
+ $('#directory-evidence').onchange=e=>{evidence=e.target.value;render();};$('#show-empty-states').onchange=render;
+ async function download(button,code){button.disabled=true;try{const full=await BitcoinCatalog.full(),ids=code?new Set(selected(code).map(m=>m.id)):null;BitcoinDirectory.download(ids?full.merchants.filter(m=>ids.has(m.id)):full.merchants,`sats-in-the-sun-${code||'us'}-directory.csv`);}catch{$('#directory-matches').textContent='Download unavailable. Please retry.';}finally{button.disabled=false;}}
+ $('#download-all').onclick=e=>download(e.currentTarget);$('#state-directory').onclick=e=>{const button=e.target.closest('[data-download]');if(button)download(button,button.dataset.download);};
+ async function load(){try{const data=await BitcoinCatalog.load();merchants=data.merchants;$('#directory-summary').textContent=`${merchants.length.toLocaleString()} sourced locations · catalog ${String(data.updated||data.nationalResearch?.checkedAt).slice(0,10)}${data.offline||!navigator.onLine?' · saved offline copy':''}`;$('#download-all').disabled=false;render();if(/^#state-[A-Z]{2}$/.test(location.hash))document.querySelector(location.hash)?.scrollIntoView();}catch{$('#directory-summary').textContent='The directory could not load.';$('#directory-matches').innerHTML='<button id="retry-directory">Retry loading</button>';$('#retry-directory').onclick=load;}}
+ load();
 })();

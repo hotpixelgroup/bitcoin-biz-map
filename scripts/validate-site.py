@@ -9,7 +9,7 @@ from urllib.request import urlopen
 import json
 import struct
 
-ROOT = Path(__file__).resolve().parent.parent / 'dist'
+ROOT = Path(__file__).resolve().parent.parent / '.publish'
 PREFIX = '/bitcoin-biz-map/'
 
 class Handler(SimpleHTTPRequestHandler):
@@ -102,7 +102,21 @@ try:
             assert len(response.read()) > 100, f'Empty asset: {asset}'
     with urlopen(urljoin(home, 'merchants.json')) as response:
         merchants = json.load(response)['merchants']
-        assert merchants == json.loads((ROOT / 'merchants.json').read_text())['merchants']
+        assert merchants == json.loads((ROOT.parent / 'dist/merchants.json').read_text())['merchants']
+    manifest=json.loads((ROOT/'catalog-manifest.json').read_text())
+    index=json.loads((ROOT/manifest['index']).read_text())
+    assert index['revision']==manifest['revision']
+    assert {m['id'] for m in index['merchants']}=={m['id'] for m in merchants}
+    detailed=[]
+    for shard in manifest['details'].values():
+        part=json.loads((ROOT/shard).read_text());assert part['revision']==index['revision'];detailed+=part['merchants']
+    assert sorted(detailed,key=lambda r:r['id'])==sorted(merchants,key=lambda r:r['id'])
+    for merchant in merchants:
+        assert (ROOT/'places'/merchant['id']/'index.html').is_file()
+    with urlopen(urljoin(home,'places/'+merchants[0]['id']+'/')) as response:
+        place=Assets();place.feed(response.read().decode())
+        assert place.meta['og:url'].endswith('/places/'+merchants[0]['id']+'/')
+    assert json.loads((ROOT/'build-info.json').read_text())['initialGzipBytes']<=650*1024
     assert not (ROOT / '.openai').exists(), 'Hosting metadata must not be public'
     assert not any(p.is_symlink() for p in ROOT.rglob('*')), 'Pages bundle cannot contain symlinks'
     print(f'Pages smoke test passed: home, relative assets, licenses, and all {len(merchants)} listings work at /bitcoin-biz-map/.')

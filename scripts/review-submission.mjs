@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { START, END, fingerprint, makeProposal, reviewSection, submissionFromIssue, parseProposal, applyProposal } from './map-review.mjs';
+import { notifyReceipt } from './receipt-status.mjs';
 const REPO = 'hotpixelgroup/bitcoin-biz-map';
 const MAP = 'https://hotpixelgroup.github.io/bitcoin-biz-map/';
 const statusMarker = '<!-- map-review-status -->';
@@ -8,7 +9,7 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
 export function authorized(permission, user) {
   return user?.type === 'User' && ['admin', 'maintain', 'write'].includes(permission);
 }
-export async function runReview({ event, mode, token, fetcher = fetch, sleep = pause }) {
+export async function runReview({ event, mode, token, fetcher = fetch, sleep = pause, receiptUpdate = async () => {} }) {
   if (process.env.GITHUB_REPOSITORY && process.env.GITHUB_REPOSITORY !== REPO) throw Error('This workflow is restricted to its configured repository.');
   const number = event.issue?.number || Number(event.inputs?.issue_number);
   if (!Number.isSafeInteger(number) || number < 1 || event.issue?.pull_request) throw Error('A valid business issue is required.');
@@ -129,7 +130,7 @@ export async function runReview({ event, mode, token, fetcher = fetch, sleep = p
         const existing = (await file(branch)).catalog;
         // The timestamp may differ on a retry. Compare the reviewed operation and
         // all merchant values, not arbitrary edits on a human-modified branch.
-        const normalizeRetry = value => { const copy = structuredClone(value); delete copy.updated; for (const review of copy.appliedReviews || []) { if (review.issue === number && review.hash === result.hash) delete review.reviewedAt; } return copy; };
+        const normalizeRetry = value => { const copy = structuredClone(value); const normalize=value=>{if(!value||typeof value!=='object')return;if(value.reviewIssue===`https://github.com/${REPO}/issues/${number}`)delete value.reviewedAt;if(value.sourceUrl===`https://github.com/${REPO}/issues/${number}`)delete value.checkedAt;for(const child of Object.values(value))normalize(child);};normalize(copy); delete copy.updated; for (const review of copy.appliedReviews || []) { if (review.issue === number && review.hash === result.hash) delete review.reviewedAt; } return copy; };
         if (fingerprint(normalizeRetry(existing)) !== fingerprint(normalizeRetry(result.catalog))) throw Error('The automation branch was modified. Inspect its pull request before retrying.');
       }
       let pull = (await api(`/pulls?state=open&head=${encodeURIComponent('hotpixelgroup:' + branch)}&base=main`))[0];
@@ -158,6 +159,7 @@ export async function runReview({ event, mode, token, fetcher = fetch, sleep = p
       break;
     }
     if (!deploymentUrl) throw Error('The main branch changed repeatedly. Reapply approved to retry against the latest data.');
+    await receiptUpdate(issue,'published',{deploymentUrl,deployedAt:new Date().toISOString()});
     await api(`/issues/${number}/labels`, 'POST', { labels: ['published'] });
     for (const name of ['needs-review', 'approval-blocked']) {
       try { await api(`/issues/${number}/labels/${name}`, 'DELETE'); } catch (error) { if (error.status !== 404) throw error; }
@@ -166,6 +168,7 @@ export async function runReview({ event, mode, token, fetcher = fetch, sleep = p
     await api(`/issues/${number}`, 'PATCH', { state: 'closed', state_reason: 'completed' });
     return { publishedId, pullUrl, deploymentUrl };
   } catch (error) {
+    try { await receiptUpdate(issue,'delayed'); } catch { /* Publication retry also retries receipt delivery. */ }
     const message = String(error.message).replace(/[@<>]/g, '').slice(0, 600);
     await status(`**Map update paused:** ${message}\n\nNo branch protections were bypassed. Fix the structured Map update, then remove/reapply **approved**. If the PR already merged, reapplying the label resumes deployment without applying the same update twice.`);
     await api(`/issues/${number}/labels`, 'POST', { labels: ['approval-blocked'] });
@@ -173,5 +176,5 @@ export async function runReview({ event, mode, token, fetcher = fetch, sleep = p
   }
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  await runReview({ event: JSON.parse(readFileSync(process.env.GITHUB_EVENT_PATH, 'utf8')), mode: process.env.REVIEW_MODE, token: process.env.GH_TOKEN });
+  await runReview({ event: JSON.parse(readFileSync(process.env.GITHUB_EVENT_PATH, 'utf8')), mode: process.env.REVIEW_MODE, token: process.env.GH_TOKEN, receiptUpdate: (issue,state,details={})=>notifyReceipt(issue,state,details) });
 }

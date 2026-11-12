@@ -1,0 +1,78 @@
+{
+  "review_date": "2026-11-11",
+  "timezone": "America/Phoenix",
+  "local_commit": "be891b0f89f09485bf5fec6e9e7cb76527bd5885",
+  "remote_main_checked": "c3e9d78b1c6cb0bd96d19f24d5b5de1a99e5b21e",
+  "remote_difference": "One commit changing Node pins in three workflows; app and catalog unchanged.",
+  "tracked_files_review_inventory": 99,
+  "catalog": {
+    "records": 9452,
+    "bytes": 7585064,
+    "gzip_bytes_local_estimate": 900221,
+    "research_snapshot": "2026-10-20",
+    "last_catalog_update": "2026-10-20T22:39:32.656Z",
+    "evidence_types": {
+      "community-dated": 8992,
+      "merchant-confirmed": 446,
+      "article-listed": 14
+    },
+    "community_age_over_90_days": 8356,
+    "community_age_over_180_days": 6901,
+    "community_age_over_365_days": 177,
+    "last_payment_records": 0,
+    "latest_payment_report_records": 0,
+    "payment_notes_records": 0,
+    "website_present": 6623,
+    "phone_present": 7527,
+    "category_labels": 21,
+    "city_names_in_multiple_states": 333,
+    "opening_hours_fields": 0
+  },
+  "checks": {
+    "node_version": "24.22.1",
+    "node_tests_passed": 54,
+    "national_policy_tests": "passed",
+    "catalog_validation": "passed all 9452 records",
+    "pages_subpath_smoke": "passed after separate rerun with loopback bind permitted",
+    "worker_deployment": "not run",
+    "production_submissions": "not sent"
+  },
+  "browser": {
+    "engine": "Codex in-app Chromium",
+    "viewports_observed": [
+      "1280x720",
+      "390x844",
+      "320x568"
+    ],
+    "physical_devices_tested": false,
+    "observations": [
+      "coffee Chicago returned 1 result; Chicago plus Coffee category returned 7",
+      "directory Chicago search retained 47 empty state sections alongside 4 matching states; Illinois had 69 matches",
+      "mobile map mode hides search inside Filters",
+      "Saved places count 1 while prior filters yield 0 saved places",
+      "nearby ZIP 60601 returns 133 places within 25 miles",
+      "mobile detail panel 393.78px high with 792px scroll content at 390x844",
+      "payment report dialog 544px high with 1329px scroll content at 320x568",
+      "Scottsdale route preview returned 19.6 miles and about 28 minutes, no live traffic",
+      "local submission challenge fails expected production-only CORS; no live submission test"
+    ]
+  },
+  "isolated_import_fixtures": {
+    "removed_id_reappears_on_import": true,
+    "removal_ledger_retained": true,
+    "reviewed_provenance_replaced_by_research": true,
+    "live_catalog_modified": false
+  },
+  "contrast": {
+    "foreground": "#f7931a",
+    "background": "#f7f7f2",
+    "ratio_rounded": 2.14,
+    "scope": "Light theme hero accent; not a complete accessibility audit"
+  },
+  "limits": [
+    "No real-user research or satisfaction baseline was available.",
+    "No individual merchant acceptance or every source URL was reverified.",
+    "Vendor code and generated geographic/snapshot data were inventoried and structurally checked, not independently audited line by line.",
+    "Competitor capabilities are based on first-party public pages, not a native-app usability benchmark."
+  ]
+}

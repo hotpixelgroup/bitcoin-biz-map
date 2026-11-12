@@ -1,4 +1,5 @@
 import { test } from 'node:test';
+import { createHash } from 'node:crypto';
 import assert from 'node:assert/strict';
 import { createIntake, ORIGIN, validateSubmission } from '../lib/intake.js';
 import { issuePayload, processQueue } from '../../scripts/process-submissions.mjs';
@@ -7,6 +8,7 @@ function fixture() {
   const records = new Map();
   const store = {
     read: async key => records.get(key) || null,
+    write: async (key,value) => {records.set(key,value);},
     claim: async (key, value) => { if (records.has(key)) return false; records.set(key, value); return true; },
     consume: async (key, limit) => { const count = records.get(key) || 0; if (count >= limit) return false; records.set(key, count + 1); return true; },
     list: async (prefix, limit) => [...records.keys()].filter(key => key.startsWith(prefix)).slice(0, limit).map(pathname => ({ pathname })),
@@ -71,7 +73,7 @@ test('queue requires its secret, and acknowledgment moves a record to a receipt'
   assert.equal(ack.status, 200);
   assert.ok(!f.records.has(`pending/${id}.json`));
   const retry = await (await f.submit()).json();
-  assert.equal(retry.state, 'published'); assert.match(retry.issueUrl, /\/issues\/42$/);
+  assert.equal(retry.state, 'awaiting-review'); assert.match(retry.issueUrl, /\/issues\/42$/);
 });
 test('storage failures never report a successful submission', async () => {
   const f = fixture(); f.store.read = async () => { throw new Error('unavailable'); };
@@ -129,4 +131,36 @@ test('anonymous payment reports validate dates and produce reviewable GitHub iss
  assert(payload.labels.includes('payment-report'));assert(payload.labels.includes('needs-review'));assert.match(payload.body,/### Payment outcome\npaid/);assert.match(payload.title,/Payment report: paid/);
  const f=fixture();assert.equal((await f.submit(base)).status,202);
  for(const invalid of [{visitDate:'2026-02-30'},{visitDate:'2999-01-01'},{visitRail:'credit'},{visitOutcome:'verified'},{kind:'suggestion'},{listingId:''},{visitOutcome:''}])assert.throws(()=>validateSubmission({...base,...invalid}));
+});
+
+test('receipts use random tokens, reveal no report text, and confirm deployment before publication',async()=>{
+ const f=fixture(),data=await (await f.submit()).json();
+ assert.match(data.statusToken,/^[a-f0-9]{64}$/);assert.notEqual(data.statusToken,data.receipt);
+ const get=token=>f.app.statusHandler(new Request('https://test/api/status?token='+token,{headers:{Origin:ORIGIN}}));
+ const received=await (await get(data.statusToken)).json();assert.equal(received.state,'received');assert.ok(!JSON.stringify(received).includes('Test Cafe'));assert.ok(!('submission' in received));
+ assert.equal((await get(data.receipt)).status,404);
+ const headers={Authorization:`Bearer ${f.secret}`,'Content-Type':'application/json'};
+ const post=body=>f.app.queueHandler(new Request('https://test/api/queue',{method:'POST',headers,body:JSON.stringify({id:data.receipt,issueNumber:99,...body})}));
+ assert.equal((await post({})).status,200);assert.equal((await (await get(data.statusToken)).json()).state,'awaiting-review');
+ assert.equal((await post({state:'published'})).status,400);
+ assert.equal((await post({state:'published',deploymentUrl:'https://github.com/hotpixelgroup/bitcoin-biz-map/actions/runs/1',deployedAt:'2026-10-20T13:00:00Z'})).status,200);
+ assert.equal((await (await get(data.statusToken)).json()).state,'published');
+ await post({state:'delayed'});assert.equal((await (await get(data.statusToken)).json()).state,'published');
+ const retry=await (await f.submit()).json();assert.equal(retry.statusToken,data.statusToken);
+ f.tick(31*86400000);assert.equal((await get(data.statusToken)).status,404);
+});
+test('receipt errors preserve input privacy and limit polling',async()=>{
+ const f=fixture(),data=await (await f.submit()).json();
+ assert.equal((await f.app.statusHandler(new Request('https://test/api/status?token='+data.statusToken,{headers:{Origin:'https://example.org'}}))).status,403);
+ for(let n=0;n<120;n++)assert.equal((await f.app.statusHandler(new Request('https://test/api/status?token='+data.statusToken,{headers:{Origin:ORIGIN}}))).status,200);
+ assert.equal((await f.app.statusHandler(new Request('https://test/api/status?token='+data.statusToken,{headers:{Origin:ORIGIN}}))).status,429);
+});
+
+test('legacy queued submissions remain deduplicated after the v2 rollout', async()=>{
+ const f=fixture(),submission=validateSubmission({kind:'suggestion',name:'Test Cafe',address:'1 Test St, Phoenix, AZ',evidence:'Public business confirmation',consent:true});
+ for(const field of ['submissionType','city','category'])delete submission[field];
+ const id=createHash('sha256').update(`2026-10-20:${JSON.stringify(submission)}`).digest('hex');
+ f.records.set(`pending/${id}.json`,{id,receivedAt:'2026-10-20T12:00:00Z',submission});
+ assert.equal((await (await f.submit()).json()).receipt,id);
+ assert.equal([...f.records.keys()].filter(k=>k.startsWith('pending/')).length,1);
 });

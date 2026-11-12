@@ -10,3 +10,6 @@ __pycache__/
 .wrangler/
 .dev.vars
 .dev.vars.*
+
+.publish/
+.reports/

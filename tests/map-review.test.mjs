@@ -159,7 +159,7 @@ test('reviewed payment success and difficulty preserve networks and latest succe
  const failure=await prepare({visitOutcome:'failed',visitDate:'2026-10-20'},first);
  const second=applyProposal(first,failure,302,'2026-10-20T20:00:00Z').catalog;
  assert.equal(second.merchants.at(-1).lastPayment.date,'2026-10-19');assert.equal(second.merchants.at(-1).latestPaymentReport.outcome,'failed');assert.equal(second.merchants.at(-1).lightning,true);
- const stale=await prepare({visitDate:'2026-10-18'},second);assert.throws(()=>applyProposal(second,stale,303,'2026-10-20T20:00:00Z'),/No listing change/);
+ const stale=await prepare({visitDate:'2026-10-18'},second),history=applyProposal(second,stale,303,'2026-10-20T20:00:00Z').catalog.merchants.at(-1);assert.equal(history.latestPaymentReport.outcome,'failed');assert.equal(history.lastPayment.date,'2026-10-19');assert.equal(history.evidenceEvents.at(-1).date,'2026-10-18');
  const future=await prepare({});future.paymentReport.date='2026-10-21';assert.throws(()=>applyProposal(catalog,future,304,'2026-10-20T20:00:00Z'),/date/);
  const parsed=submissionFromIssue({labels:[{name:'merchant-correction'}],body:'### Payment outcome\npaid\n\n### Visit date\n2026-10-19\n\n### Payment rail\nlightning'});assert.equal(parsed.visitOutcome,'paid');assert.equal(parsed.visitDate,'2026-10-19');
 });
@@ -170,4 +170,43 @@ test('queued payment report becomes the exact reviewed branch history through is
  const proposal=await makeProposal(parsed,catalog);assert.equal(proposal.listingId,echo.id);
  const updated=applyProposal(catalog,parseProposal(payload.body+reviewSection(proposal,catalog)),305,'2026-10-20T20:00:00Z').catalog;
  assert.equal(updated.merchants.at(-1).lastPayment.rail,'unknown');assert.equal(updated.merchants.at(-1).paymentNotes,'Call ahead.');assert.deepEqual(updated.merchants[0],catalog.merchants[0]);
+});
+
+test('contact corrections retain acceptance evidence and record only changed fields', async () => {
+ const source=structuredClone(catalog);
+ source.merchants.at(-1).verification={type:'community-dated',date:'2025-11-26',checkedAt:'2026-10-20',sourceUrl:'https://example.org/source'};
+ const p=await makeProposal({kind:'correction',listingId:echo.id,evidence:'Phone punctuation'},source);
+ p.merchant.phone='normalized';
+ const next=applyProposal(source,p,901,'2026-11-11T00:00:00Z').catalog;
+ assert.deepEqual(next.merchants.at(-1).verification,source.merchants.at(-1).verification);
+ assert.equal(next.merchants.at(-1).reviewedOverrides.phone.value,'normalized');
+ assert.ok(!next.merchants.at(-1).reviewedOverrides.lightning);
+ const remove=await makeProposal({kind:'correction',listingId:echo.id,evidence:'Closure'},next);remove.action='remove';
+ const removed=applyProposal(next,remove,902).catalog;
+ assert.equal(removed.removals[0].id,echo.id);assert.ok(removed.removals[0].aliases.includes('node:123'));
+});
+test('an address without a city delimiter never fabricates a city from the street',async()=>{
+ const p=await makeProposal({kind:'suggestion',name:'Phin Brew fixture',address:'20020 N 59th Ave #105, AZ 85308'},catalog,{fetcher:noGeocode});
+ assert.equal(p.merchant.city,'');
+ const hit={addressComponents:{state:'AZ',city:'GLENDALE'},coordinates:{x:-112.18,y:33.66}};
+ const located=await makeProposal({kind:'suggestion',name:'Fixture',address:'20020 N 59th Ave #105',state:'AZ'},catalog,{fetcher:async()=>Response.json({result:{addressMatches:[hit]}})});
+ assert.equal(located.merchant.city,'GLENDALE');
+});
+test('same-day difficulty remains prominent after a later approval of same-day success',async()=>{
+ let source=structuredClone(catalog);
+ for(const [issue,outcome] of [[903,'failed'],[904,'paid']]) {
+  const p=await makeProposal({kind:'correction',listingId:echo.id,evidence:'Visitor account',visitOutcome:outcome,visitDate:'2026-10-20',visitRail:'lightning'},source);
+  source=applyProposal(source,p,issue,'2026-11-11T00:00:00Z').catalog;
+ }
+ assert.equal(source.merchants.at(-1).latestPaymentReport.outcome,'failed');
+ assert.equal(source.merchants.at(-1).lastPayment.outcome,'paid');
+ assert.equal(source.merchants.at(-1).evidenceEvents.length,2);
+});
+
+test('receipt publication follows successful Pages deployment and retries delivery safely',async()=>{
+ const f=await workflowFixture(),transitions=[];
+ f.options.receiptUpdate=async(issue,state,details)=>{transitions.push(state);if(state==='published'){assert.ok(f.state.merged);assert.equal(f.state.failDeployment,false);assert.match(details.deploymentUrl,/actions\/runs\//);}};
+ f.state.failDeployment=true;await assert.rejects(runReview(f.options));assert.deepEqual(transitions,['delayed']);
+ f.state.failDeployment=false;await runReview(f.options);assert.deepEqual(transitions,['delayed','published']);
+ assert.equal(f.state.writes.filter(w=>w.path==='/pulls/124/merge').length,1);
 });

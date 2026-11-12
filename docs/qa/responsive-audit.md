@@ -38,7 +38,7 @@ Primary text contrast checks (sRGB): muted light text `#62695f` on `#f7f7f2`: 5.
 
 ## Repeat before releasing layout changes
 
-1. Serve `dist/` and use the viewport list above. Start at the root URL with no hash or state filter.
+1. Run `npm run dev` to package and serve `.publish/` at `http://localhost:5173/`. Use the viewport list above and start with no hash or state filter.
 2. Confirm tiles, orange pins, and places render; inspect map controls for intersections. Switch to the full list and select a business. Verify the selected pin is visible above/beside the detail panel.
 3. Check directory headers, expanded rows, long-name trails, both themes, and dialogs at narrow, short landscape, tablet, and desktop sizes.
 4. Resize while details and a route are open. Check keyboard collapse/Escape and restored focus.

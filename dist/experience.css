@@ -47,6 +47,7 @@ input::placeholder,textarea::placeholder{color:var(--muted);opacity:1}
 .state-heading>div:last-child,.state-section>details>summary,.state-index a,.sidebar-bottom button,.sidebar-bottom a,.trip-panel li>div button,.trip-heading p,.directory-method p,.directory-method strong,.directory-method>a,footer{font-size:14px}
 .community-actions a{min-height:44px}
 @media(max-width:1023px){
+ .explorer:not(.map-view) .sidebar{width:100%}
  .explorer.map-view[data-sheet] .sidebar{height:var(--drag-height,var(--map-cover));overflow:auto}
  .explorer.keyboard-map .sidebar{transition:none}
  .national-filters select,.all-categories select,.city-select select,.list-heading select,.travel-mode select{font-size:16px}

@@ -217646,6 +217646,112 @@
         "summary": "Merchant page publishes Bitcoin as a payment option in its footer alongside exact Cheyenne office address. Page narrative contains older banking commentary, so acceptance evidence is the payment-options statement rather than the narrative. No Bitcoin rail stated.",
         "date": ""
       }
+    },
+    {
+      "name": "Phin Brew",
+      "address": "20020 N 59th Ave #105, Glendale, AZ 85308",
+      "city": "Glendale",
+      "state": "AZ",
+      "category": "Coffee Shops & Cafés",
+      "lat": 33.666572052197,
+      "lon": -112.186748304453,
+      "website": "https://www.drinkphinbrew.com/",
+      "phone": "",
+      "lightning": true,
+      "onchain": false,
+      "osmId": "",
+      "coordinateSource": "US Census Geocoder / Public_AR_Current (address-range estimate; reviewed by maintainer)",
+      "verified": "",
+      "paymentNotes": "",
+      "id": "us-az-1000016",
+      "verification": {
+        "type": "maintainer-reviewed",
+        "checkedAt": "2026-11-14",
+        "sourceUrl": "https://github.com/hotpixelgroup/bitcoin-biz-map/issues/16",
+        "summary": "I’ve been there multiple times and every time I pay using BTC"
+      },
+      "reviewedOverrides": {
+        "name": {
+          "value": "Phin Brew",
+          "reviewIssue": "https://github.com/hotpixelgroup/bitcoin-biz-map/issues/16",
+          "reviewedAt": "2026-11-14T05:37:11.636Z"
+        },
+        "address": {
+          "value": "20020 N 59th Ave #105, Glendale, AZ 85308",
+          "reviewIssue": "https://github.com/hotpixelgroup/bitcoin-biz-map/issues/16",
+          "reviewedAt": "2026-11-14T05:37:11.636Z"
+        },
+        "city": {
+          "value": "Glendale",
+          "reviewIssue": "https://github.com/hotpixelgroup/bitcoin-biz-map/issues/16",
+          "reviewedAt": "2026-11-14T05:37:11.636Z"
+        },
+        "state": {
+          "value": "AZ",
+          "reviewIssue": "https://github.com/hotpixelgroup/bitcoin-biz-map/issues/16",
+          "reviewedAt": "2026-11-14T05:37:11.636Z"
+        },
+        "category": {
+          "value": "Coffee Shops & Cafés",
+          "reviewIssue": "https://github.com/hotpixelgroup/bitcoin-biz-map/issues/16",
+          "reviewedAt": "2026-11-14T05:37:11.636Z"
+        },
+        "lat": {
+          "value": 33.666572052197,
+          "reviewIssue": "https://github.com/hotpixelgroup/bitcoin-biz-map/issues/16",
+          "reviewedAt": "2026-11-14T05:37:11.636Z"
+        },
+        "lon": {
+          "value": -112.186748304453,
+          "reviewIssue": "https://github.com/hotpixelgroup/bitcoin-biz-map/issues/16",
+          "reviewedAt": "2026-11-14T05:37:11.636Z"
+        },
+        "website": {
+          "value": "https://www.drinkphinbrew.com/",
+          "reviewIssue": "https://github.com/hotpixelgroup/bitcoin-biz-map/issues/16",
+          "reviewedAt": "2026-11-14T05:37:11.636Z"
+        },
+        "phone": {
+          "value": "",
+          "reviewIssue": "https://github.com/hotpixelgroup/bitcoin-biz-map/issues/16",
+          "reviewedAt": "2026-11-14T05:37:11.636Z"
+        },
+        "lightning": {
+          "value": true,
+          "reviewIssue": "https://github.com/hotpixelgroup/bitcoin-biz-map/issues/16",
+          "reviewedAt": "2026-11-14T05:37:11.636Z"
+        },
+        "onchain": {
+          "value": false,
+          "reviewIssue": "https://github.com/hotpixelgroup/bitcoin-biz-map/issues/16",
+          "reviewedAt": "2026-11-14T05:37:11.636Z"
+        },
+        "osmId": {
+          "value": "",
+          "reviewIssue": "https://github.com/hotpixelgroup/bitcoin-biz-map/issues/16",
+          "reviewedAt": "2026-11-14T05:37:11.636Z"
+        },
+        "coordinateSource": {
+          "value": "US Census Geocoder / Public_AR_Current (address-range estimate; reviewed by maintainer)",
+          "reviewIssue": "https://github.com/hotpixelgroup/bitcoin-biz-map/issues/16",
+          "reviewedAt": "2026-11-14T05:37:11.636Z"
+        },
+        "verified": {
+          "value": "",
+          "reviewIssue": "https://github.com/hotpixelgroup/bitcoin-biz-map/issues/16",
+          "reviewedAt": "2026-11-14T05:37:11.636Z"
+        },
+        "paymentNotes": {
+          "value": "",
+          "reviewIssue": "https://github.com/hotpixelgroup/bitcoin-biz-map/issues/16",
+          "reviewedAt": "2026-11-14T05:37:11.636Z"
+        }
+      },
+      "sourceAliases": [
+        "us-az-1000016"
+      ],
+      "reviewIssue": "https://github.com/hotpixelgroup/bitcoin-biz-map/issues/16",
+      "reviewedAt": "2026-11-14"
     }
   ],
   "appliedReviews": [
@@ -217655,9 +217761,16 @@
       "action": "update",
       "listingId": "az-008",
       "reviewedAt": "2026-10-20T22:39:32.656Z"
+    },
+    {
+      "issue": 16,
+      "hash": "cfe1dad8b04df010b6b6d65ddc0635a61eb7fff334a53262f3bf10f2ad3682a2",
+      "action": "add",
+      "listingId": "us-az-1000016",
+      "reviewedAt": "2026-11-14T05:37:11.636Z"
     }
   ],
-  "updated": "2026-10-20T22:39:32.656Z",
+  "updated": "2026-11-14T05:37:11.636Z",
   "nationalResearch": {
     "checkedAt": "2026-10-20",
     "upstream": "https://api.btcmap.org/v4/places",
